@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-
+import sys
 import os
 import re
 import time
@@ -12,6 +12,28 @@ from collections import OrderedDict
 from typing import List, Any
 
 import numpy as np
+
+import logging
+from logging import FileHandler
+from logging import Formatter
+
+
+LOG_FORMAT = (
+    "%(asctime)s [%(levelname)s]: %(message)s in %(pathname)s:%(lineno)d")
+LOG_LEVEL = logging.INFO
+
+# messaging logger
+MESSAGING_LOG_FILE = "project.log"
+
+logging.basicConfig(format='%(asctime)s | %(levelname)s : %(message)s',
+                     level=logging.INFO, stream=sys.stdout)
+
+quest_gen_logger = logging.getLogger("project.quest_gen")
+quest_gen_logger.setLevel(LOG_LEVEL)
+quest_gen_logger_file_handler = FileHandler(MESSAGING_LOG_FILE)
+quest_gen_logger_file_handler.setLevel(LOG_LEVEL)
+quest_gen_logger_file_handler.setFormatter(Formatter(LOG_FORMAT))
+quest_gen_logger.addHandler(quest_gen_logger_file_handler)
 
 
 class RandomGenerator:

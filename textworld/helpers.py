@@ -14,8 +14,9 @@ from textworld.envs import GlulxEnvironment
 from textworld.envs import JerichoEnvironment
 
 from textworld.agents import HumanAgent
+from textworld.agents.walkthrough import WalkthroughDone
 
-from textworld.generator import make_game, compile_game
+from textworld.generator import make_game, compile_game, make_lab_game
 
 
 def start(path: str) -> Environment:
@@ -61,10 +62,11 @@ def play(game_file: str, agent: Optional[Agent] = None, max_nb_steps: int = 1000
     Notes:
         Use script :command:`tw-play` for more options.
     """
+    msg = ""
     env = start(game_file)
     if agent is None:
         try:
-            agent = HumanAgent(autocompletion=True)
+            agent = HumanAgent(autocompletion=False)
         except AttributeError:
             agent = HumanAgent()
 
@@ -91,6 +93,8 @@ def play(game_file: str, agent: Optional[Agent] = None, max_nb_steps: int = 1000
 
     except KeyboardInterrupt:
         pass  # Stop the game.
+    except WalkthroughDone:
+        print("completed all commands")
     finally:
         env.close()
 
@@ -98,9 +102,12 @@ def play(game_file: str, agent: Optional[Agent] = None, max_nb_steps: int = 1000
         msg = "Done after {} steps. Score {}/{}."
         msg = msg.format(game_state.nb_moves, game_state.score, game_state.max_score)
         print(msg)
+    stats = {'move count': game_state.nb_moves, 
+             'score': game_state.score}
+    return stats
 
 
-def make(options: GameOptions) -> Tuple[str, Game]:
+def make_custom_lab(options: GameOptions, path: str) -> Tuple[str, Game]:
     """ Makes a text-based game.
 
     Arguments:
@@ -108,10 +115,12 @@ def make(options: GameOptions) -> Tuple[str, Game]:
             For customizing the game generation (see
             :py:class:`textworld.GameOptions <textworld.generator.game.GameOptions>`
             for the list of available options).
+        path: Path of the compiled game (.ulx or .z8). Also, the source (.ni)
+              and metadata (.json) files will be saved along with it.
 
     Returns:
         A tuple containing the path to the game file, and its corresponding Game's object.
     """
-    game = make_game(options)
-    game_file = compile_game(game, options)
+    game = make_lab_game(options)
+    game_file = compile_game(game, path, force_recompile=True)
     return game_file, game
