@@ -3,29 +3,38 @@
 
 
 import os
-import json
 import uuid
 import numpy as np
 from os.path import join as pjoin
-from typing import Optional, Mapping, Dict
+from typing import Optional, Mapping, Dict, List
 
 from numpy.random import RandomState
 
 from textworld import g_rng
-from textworld.utils import maybe_mkdir, str2bool
+from textworld.utils import maybe_mkdir, str2bool, uniquify, encode_seeds
 from textworld.generator.chaining import ChainingOptions, sample_quest
+from textworld.generator.lab_game import LabGameOptions
 from textworld.generator.game import Game, Quest, Event, World, GameOptions
 from textworld.generator.graph_networks import create_map, create_small_map
 from textworld.generator.text_generation import generate_text_from_grammar
-
-from textworld.generator import inform7
+from textworld.generator import data
 from textworld.generator.inform7 import generate_inform7_source, compile_inform7_game
 from textworld.generator.inform7 import CouldNotCompileGameError
 
 from textworld.generator.data import KnowledgeBase
 from textworld.generator.text_grammar import Grammar
 from textworld.generator.maker import GameMaker
+from textworld.generator.lab_game_maker import LabGameMaker
 from textworld.generator.logger import GameLogger
+
+from textworld.generator.sketch_generator import SketchGenerationOptions, WinConditionType
+from textworld.generator.surface_generator import SurfaceGenerator
+
+import sys
+from pathlib import Path
+root = Path(__file__).parent.absolute()
+sys.path.insert(0, str(root))
+
 
 
 class TextworldGenerationWarning(UserWarning):
@@ -142,7 +151,7 @@ def make_game_with(world, quests=None, grammar=None):
     game = Game(world, grammar, quests)
     if grammar is None:
         for var, var_infos in game.infos.items():
-            var_infos.name = var.name
+            var_infos.name = var
     else:
         game = generate_text_from_grammar(game, grammar)
 
@@ -200,30 +209,121 @@ def make_game(options: GameOptions) -> Game:
 
     return game
 
+def make_lab_game(options: LabGameOptions) -> Game:
 
-def compile_game(game: Game, options: Optional[GameOptions] = None):
+    """
+    Make a lab game (map + devices + quest).
+
+    Arguments:
+    nb_devices: Number of devices in the world.
+    : Options for the grammar.
+
+    Returns:
+    Generated game.
+    """
+
+    max_quest_length = options.sketch_gen_options.max_depth
+    surface_gen_options = options.surface_gen_options
+    max_search_steps = options.sketch_gen_options.max_steps
+
+    seeds = options.seeds
+    metadata = {}  # Collect infos for reproducibility.
+    metadata["desc"] = "Lab-Game"
+    metadata["mode"] = "custom"
+    metadata["seeds"] = seeds
+    metadata["world_size"] = 1 # Single room always 
+    metadata["max_quest_length"] = max_quest_length
+
+    rng_quest = options.rngs['quest']
+
+    sg = SurfaceGenerator(seed=seeds['surface'],
+                        surface_gen_options=surface_gen_options)
+    
+    devices = options.lab_config.devices
+    material_states = options.lab_config.material_states
+    min_uses_per_device = options.lab_config.min_uses_per_device
+    max_uses_per_device = options.lab_config.max_uses_per_device
+    device_types = uniquify(KnowledgeBase.default().types.descendants('sa'))
+    
+    M = LabGameMaker(surface_generator=sg)
+    # Create the lab room.
+    lab = M.new_room("lab")
+    # - Describe the room.
+    lab.desc = "The lab is a magical place where you'll learn materials synthesis!"
+    
+    # Used so that Inform7 will be able to reference names of any of the
+    # devices (needed for the single argument hack), but we only want the player
+    # to be able to interact with the chosen ones.
+    limbo = M.new_room("Limbo")
+    limbo.desc = "Storeroom for unused devices."
+    
+    M.set_player(lab)
+    
+    # Add materials to the lab.
+    for mat_state in material_states:
+        mat = M.new_lab_entity('m')
+        mat.add_property(mat_state)
+        lab.add(mat)
+        
+    if options.lab_config.lab_container_available:
+        # Add lab_container to the world.
+        lab_container = M.new_lab_container()
+        lab.add(lab_container)
+        
+    
+    # Add devices to the world. We add all device types but only the available
+    # ones to the lab room
+    for device_type in device_types:
+        device = M.new_lab_entity(device_type)
+        if device_type in devices:
+            lab.add(device)
+        else:
+            limbo.add(device)
+            
+            
+    quest_gen_options = SketchGenerationOptions(max_depth=max_quest_length,
+                            max_steps=max_search_steps,
+                            win_condition=WinConditionType.ALL,
+                            quest_rng=rng_quest,
+                            min_uses_per_device=min_uses_per_device,
+                            max_uses_per_device=max_uses_per_device
+                            )
+    
+    quest = M.generate_quest_surface_pair(quest_gen_options)
+    game = M.build()
+    game.metadata = metadata
+    # TODO add uuid based on rest of settings
+    uuid = "tw-custom-lab-game-{specs}-{surface_gen}-{seeds}"
+    uuid = uuid.format(specs=encode_seeds((quest_gen_options.max_depth, max_search_steps)), 
+                        surface_gen=surface_gen_options.uuid,
+                       seeds=encode_seeds([seeds[k] for k in sorted(seeds)]))
+    game.metadata["uuid"] = uuid
+    return game
+
+def compile_game(game: Game, path: str, force_recompile: bool = False):
     """
     Compile a game.
 
     Arguments:
         game: Game object to compile.
-        options:
-            For customizing the game generation (see
-            :py:class:`textworld.GameOptions <textworld.generator.game.GameOptions>`
-            for the list of available options).
+        path: Path of the compiled game (.ulx or .z8). Also, the source (.ni)
+              and metadata (.json) files will be saved along with it.
+        force_recompile: If `True`, recompile game even if it already exists.
 
     Returns:
         The path to compiled game.
     """
-    options = options or GameOptions()
 
-    folder, filename = os.path.split(options.path)
+    folder, filename = os.path.split(path)
     if not filename:
         filename = game.metadata.get("uuid", str(uuid.uuid4()))
 
     filename, ext = os.path.splitext(filename)
     if not ext:
-        ext = options.file_ext  # Add default extension, if needed.
+        ext = ".ulx"  # Add default extension, if needed.
+
+    if str2bool(os.environ.get("TEXTWORLD_FORCE_ZFILE", False)):
+        ext = ".z8"
 
     source = generate_inform7_source(game)
 
@@ -232,14 +332,14 @@ def compile_game(game: Game, options: Optional[GameOptions] = None):
     game_file = pjoin(folder, filename + ext)
 
     already_compiled = False  # Check if game is already compiled.
-    if not options.force_recompile and os.path.isfile(game_file) and os.path.isfile(game_json):
+    if not force_recompile and os.path.isfile(game_file) and os.path.isfile(game_json):
         already_compiled = game == Game.load(game_json)
         msg = ("It's highly unprobable that two games with the same id have different structures."
                " That would mean the generator has been modified."
                " Please clean already generated games found in '{}'.".format(folder))
         assert already_compiled, msg
 
-    if not already_compiled or options.force_recompile:
+    if not already_compiled or force_recompile:
         game.save(game_json)
         compile_inform7_game(source, game_file)
 

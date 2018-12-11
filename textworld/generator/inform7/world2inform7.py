@@ -112,16 +112,6 @@ class Inform7Game:
                 source += 'The description of {} is "{}".\n'.format(obj_infos.id, obj_infos.desc.replace("\n", "[line break]"))
                 source += 'The printed name of {} is "{}".\n'.format(obj_infos.id, obj_infos.name)
 
-                if obj_infos.indefinite:
-                    source += 'The indefinite article of {} is "{}".\n'.format(obj_infos.id, obj_infos.indefinite)
-
-                if obj_infos.definite:
-                    source += 'The definite article of {} is "{}".\n'.format(obj_infos.id, obj_infos.definite)
-
-                if obj_infos.synonyms:
-                    for synonym in obj_infos.synonyms:
-                       source += 'Understand "{}" as {}.\n'.format(synonym, obj_infos.id)
-
                 # Since we use objects' id in Inform7 source code, we need to specify how to refer to them.
                 if obj_infos.name:
                     source += 'Understand "{}" as {}.\n'.format(obj_infos.name, obj_infos.id)
@@ -232,6 +222,25 @@ class Inform7Game:
         source = ""
         source += "When play begins, seed the random-number generator with {}.\n\n".format(seed)
         source += self.define_inform7_kinds()
+
+        # Add definition of 'empty'
+        source += "Definition: a container is empty rather than non-empty if the first thing held by it is nothing."
+        
+        # Add definition of production and processing relations:
+        # Production corresponds to creating a new material (result_new predicate)
+        # such as a mixture
+        # Processing corresponds to modifying an existing material such as
+        # grinding from solid to powder (result_mod predicate)
+        source += textwrap.dedent("""\
+                                
+        Processing relates various things to various things.
+        The verb to have processed means the processing relation.
+        
+        Production relates various things to various things.
+        The verb to have produced means the production relation.
+        
+        """)
+
         # Mention that rooms have a special text attribute called 'internal name'.
         source += "A room has a text called internal name.\n\n"
 
@@ -288,7 +297,7 @@ class Inform7Game:
             # Add winning and losing conditions for quest.
             quest_ending_conditions = textwrap.dedent("""\
             if quest{quest_id} completed is true:
-                do nothing;""".format(quest_id=quest_id))
+                say "";""".format(quest_id=quest_id))
 
             fail_template = textwrap.dedent("""
             else if {conditions}:
@@ -385,26 +394,6 @@ class Inform7Game:
         # Replace default banner with a greeting message and the quest description.
         source += textwrap.dedent("""\
         Rule for printing the banner text:
-            say "[fixed letter spacing]";
-            say "                    ________  ________  __    __  ________        [line break]";
-            say "                   |        \|        \|  \  |  \|        \       [line break]";
-            say "                    \$$$$$$$$| $$$$$$$$| $$  | $$ \$$$$$$$$       [line break]";
-            say "                      | $$   | $$__     \$$\/  $$   | $$          [line break]";
-            say "                      | $$   | $$  \     >$$  $$    | $$          [line break]";
-            say "                      | $$   | $$$$$    /  $$$$\    | $$          [line break]";
-            say "                      | $$   | $$_____ |  $$ \$$\   | $$          [line break]";
-            say "                      | $$   | $$     \| $$  | $$   | $$          [line break]";
-            say "                       \$$    \$$$$$$$$ \$$   \$$    \$$          [line break]";
-            say "              __       __   ______   _______   __        _______  [line break]";
-            say "             |  \  _  |  \ /      \ |       \ |  \      |       \ [line break]";
-            say "             | $$ / \ | $$|  $$$$$$\| $$$$$$$\| $$      | $$$$$$$\[line break]";
-            say "             | $$/  $\| $$| $$  | $$| $$__| $$| $$      | $$  | $$[line break]";
-            say "             | $$  $$$\ $$| $$  | $$| $$    $$| $$      | $$  | $$[line break]";
-            say "             | $$ $$\$$\$$| $$  | $$| $$$$$$$\| $$      | $$  | $$[line break]";
-            say "             | $$$$  \$$$$| $$__/ $$| $$  | $$| $$_____ | $$__/ $$[line break]";
-            say "             | $$$    \$$$ \$$    $$| $$  | $$| $$     \| $$    $$[line break]";
-            say "              \$$      \$$  \$$$$$$  \$$   \$$ \$$$$$$$$ \$$$$$$$ [line break]";
-            say "[variable letter spacing][line break]";
             say "{objective}[line break]".
 
         """.format(objective=objective))
@@ -436,7 +425,6 @@ class Inform7Game:
                 say "The [target] is fixed in place.";
             otherwise:
                 say "You need to take the [target] first.";
-                set pronouns from target;
             stop.
 
         """)
@@ -450,7 +438,6 @@ class Inform7Game:
                 it is likely;
             if the noun is not nothing and the second noun is not nothing and the player's command matches the text printed name of the noun and the player's command matches the text printed name of the second noun:
                 it is very likely.  [Handle action with two arguments.]
-
         """)
 
         # Useful for listing room contents with their properties.
@@ -515,6 +502,26 @@ class Inform7Game:
 
         """)
 
+        # List the state of a material when examined
+        source += textwrap.dedent("""\
+        After examining a noun:
+            if the noun provides the property state:
+                say "The [noun] is in state [the state of the noun]"
+
+
+        """)
+        
+        # List the contents of a mixture when examined
+        source += textwrap.dedent("""\
+        Instead of examining a noun when the noun is a mixture:
+            say "The [noun] is in state [the state of the noun]. ";
+            if a composition is part of the noun:
+                let the current composition be a random composition which is part of the noun;
+                say "The mixture is composed of [a list of things in the current composition]. "
+
+
+        """)
+
         # Print properties of objects when listing the inventory contents and the room contents.
         source += textwrap.dedent("""\
         After printing the name of something (called target) while
@@ -530,33 +537,24 @@ class Inform7Game:
         [At the moment, we only support "open/unlocked", "closed/unlocked" and "closed/locked" for doors and containers.]
         [A first property-aggregation rule for an openable open thing (this is the mention open openables rule):
             add "open" to the tagline.
-
         A property-aggregation rule for an openable closed thing (this is the mention closed openables rule):
             add "closed" to the tagline.
-
         A property-aggregation rule for an lockable unlocked thing (this is the mention unlocked lockable rule):
             add "unlocked" to the tagline.
-
         A property-aggregation rule for an lockable locked thing (this is the mention locked lockable rule):
             add "locked" to the tagline.]
-
         A first property-aggregation rule for an openable lockable open unlocked thing (this is the mention open openables rule):
             add "open" to the tagline.
-
         A property-aggregation rule for an openable lockable closed unlocked thing (this is the mention closed openables rule):
             add "closed" to the tagline.
-
         A property-aggregation rule for an openable lockable closed locked thing (this is the mention locked openables rule):
             add "locked" to the tagline.
-
         A property-aggregation rule for a lockable thing (called the lockable thing) (this is the mention matching key of lockable rule):
             let X be the matching key of the lockable thing;
             if X is not nothing:
                 add "match [X]" to the tagline.
-
         A property-aggregation rule for an edible off-stage thing (this is the mention eaten edible rule):
             add "eaten" to the tagline.
-
         The last property-aggregation rule (this is the print aggregated properties rule):
             if the number of entries in the tagline is greater than 0:
                 say " ([tagline])";
@@ -642,16 +640,6 @@ class Inform7Game:
                 try printing the entire state;
 
         Every turn:
-            if extra description command option is true:
-                say "<description>";
-                try looking;
-                say "</description>";
-            if extra inventory command option is true:
-                say "<inventory>";
-                try taking inventory;
-                say "</inventory>";
-            if extra score command option is true:
-                say "<score>[line break][score][line break]</score>";
             if print state option is true:
                 try printing the entire state;
 
@@ -697,21 +685,21 @@ class Inform7Game:
         Displaying help message is an action applying to nothing.
         Carry out displaying help message:
             say "[fixed letter spacing]Available commands:[line break]";
-            say "  look:                describe the current room[line break]";
-            say "  goal:                print the goal of this game[line break]";
-            say "  inventory:           print player's inventory[line break]";
-            say "  go <dir>:            move the player north, east, south or west[line break]";
-            say "  examine ...:         examine something more closely[line break]";
-            say "  eat ...:             eat edible food[line break]";
-            say "  open ...:            open a door or a container[line break]";
-            say "  close ...:           close a door or a container[line break]";
-            say "  drop ...:            drop an object on the floor[line break]";
-            say "  take ...:            take an object that is on the floor[line break]";
-            say "  put ... on ...:      place an object on a supporter[line break]";
-            say "  take ... from ...:   take an object from a container or a supporter[line break]";
-            say "  insert ... into ...: place an object into a container[line break]";
-            say "  lock ... with ...:   lock a door or a container with a key[line break]";
-            say "  unlock ... with ...: unlock a door or a container with a key[line break]";
+            say "  look:                                describe the current room[line break]";
+            say "  goal:                                print the goal of this game[line break]";
+            say "  inventory:                           print player's inventory[line break]";
+            say "  go <dir>:                            move the player north, east, south or west[line break]";
+            say "  examine <something>:                 examine something more closely[line break]";
+            say "  eat <something>:                     eat something edible[line break]";
+            say "  open <something>:                    open a door or a container[line break]";
+            say "  close <something>:                   close a door or a container[line break]";
+            say "  drop <something>:                    drop an object on the floor[line break]";
+            say "  take <something>:                    take an object that is on the floor[line break]";
+            say "  put <something> on <something>:      place an object on a supporter[line break]";
+            say "  take <something> from <something>:   take an object from a container or a supporter[line break]";
+            say "  insert <something> into <something>: place an object into a container[line break]";
+            say "  lock <something> with <something>:   lock a door or a container with a key[line break]";
+            say "  unlock <something> with <something>: unlock a door or a container with a key[line break]";
 
         Understand "help" as displaying help message.
 
@@ -720,9 +708,8 @@ class Inform7Game:
         # Disable take/get all.
         source += textwrap.dedent("""\
             Taking all is an action applying to nothing.
-            Check taking all:
-                say "You have to be more specific!";
-                rule fails.
+            Carry out taking all:
+                say "You have to be more specific!".
 
             Understand "take all" as taking all.
             Understand "get all" as taking all.
@@ -735,61 +722,6 @@ class Inform7Game:
             Understand "take everything" as taking all.
             Understand "get everything" as taking all.
             Understand "pick up everything" as taking all.
-
-        """)
-
-        # Special command to issue "look" command at every step.
-        source += textwrap.dedent("""\
-        The extra description command option is a truth state that varies.
-        The extra description command option is usually false.
-
-        Turning on the extra description command option is an action applying to nothing.
-        Carry out turning on the extra description command option:
-            Decrease turn count by 1;
-            Now the extra description command option is true.
-
-        Understand "tw-extra-infos description" as turning on the extra description command option.
-
-        """)
-
-        # Special command to issue "inventory" command at every step.
-        source += textwrap.dedent("""\
-        The extra inventory command option is a truth state that varies.
-        The extra inventory command option is usually false.
-
-        Turning on the extra inventory command option is an action applying to nothing.
-        Carry out turning on the extra inventory command option:
-            Decrease turn count by 1;
-            Now the extra inventory command option is true.
-
-        Understand "tw-extra-infos inventory" as turning on the extra inventory command option.
-
-        """)
-
-        # Special command to issue "score" command at every step.
-        source += textwrap.dedent("""\
-        The extra score command option is a truth state that varies.
-        The extra score command option is usually false.
-
-        Turning on the extra score command option is an action applying to nothing.
-        Carry out turning on the extra score command option:
-            Decrease turn count by 1;
-            Now the extra score command option is true.
-
-        Understand "tw-extra-infos score" as turning on the extra score command option.
-
-        """)
-
-        # Tracing actions.
-        source += textwrap.dedent("""\
-            To trace the actions:
-                (- trace_actions = 1; -).
-
-            Tracing the actions is an action applying to nothing.
-            Carry out tracing the actions:
-                trace the actions;
-
-            Understand "tw-trace-actions" as tracing the actions.
 
         """)
 
@@ -811,7 +743,7 @@ class Inform7Game:
         # take the object from.
         source += textwrap.dedent("""\
         The taking allowed flag is a truth state that varies.
-        The taking allowed flag is usually false.
+        The taking allowed flag is usually true.
 
         Before removing something from something:
             now the taking allowed flag is true.
@@ -829,18 +761,8 @@ class Inform7Game:
                 say "Can't see any [object] on the floor! Try taking the [object] from the [container] instead.";
                 rule fails.
 
-        Understand "take [something]" as removing it from.
-
-        Rule for supplying a missing second noun while removing:
-            if restrict commands option is false and noun is on a supporter (called the supporter):
-                now the second noun is the supporter;
-            else if restrict commands option is false and noun is in a container (called the container):
-                now the second noun is the container;
-            else:
-                try taking the noun;
-                say ""; [Needed to avoid printing a default message.]
-
         """)
+
 
         # Special command to print the maximum score of a game.
         source += textwrap.dedent("""\
@@ -849,24 +771,6 @@ class Inform7Game:
             say "[maximum score]".
 
         Understand "tw-print max_score" as reporting max score.
-
-        """)
-
-        # Special command to print the maximum score of a game.
-        source += textwrap.dedent("""\
-        To print id of (something - thing):
-            (- print {something}, "^"; -).
-
-        Printing the id of player is an action applying to nothing.
-        Carry out printing the id of player:
-            print id of player.
-
-        Printing the id of EndOfObject is an action applying to nothing.
-        Carry out printing the id of EndOfObject:
-            print id of EndOfObject.
-
-        Understand "tw-print player id" as printing the id of player.
-        Understand "tw-print EndOfObject id" as printing the id of EndOfObject.
 
         """)
 
@@ -896,7 +800,7 @@ def compile_inform7_game(source: str, output: str, verbose: bool = False) -> Non
     with make_temp_directory(prefix="tmp_inform") as project_folder:
         filename, ext = os.path.splitext(output)
         story_filename = filename + ".ni"
-
+#        print(source)
         # Save story file.
         with open(story_filename, 'w') as f:
             f.write(source)
@@ -944,8 +848,8 @@ def compile_inform7_game(source: str, output: str, verbose: bool = False) -> Non
 
         i6_options = "-"
         # i6_options += "k"  # Debug file, maybe useful to extract vocab?
-        if str2bool(os.environ.get("TEXTWORLD_I6_DEBUG", False)):
-            i6_options += "D"  # Debug mode, enables Inform7 testing commands.
+        if str2bool(os.environ.get("TEXTWORLD_I6_DEBUG", True)):
+            i6_options += "D"  # Debug mode, so we can do "actions on" and get Inform7 action events.
 
         i6_options += "E2wS"
         i6_options += "G" if ext == ".ulx" else "v8"

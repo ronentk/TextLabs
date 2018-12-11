@@ -15,7 +15,7 @@ from textworld.utils import encode_seeds
 from textworld.generator.data import KnowledgeBase
 from textworld.generator.text_grammar import Grammar, GrammarOptions
 from textworld.generator.world import World
-from textworld.logic import Action, Proposition, Rule, State
+from textworld.logic import Action, Proposition, Rule, State, CompactAction
 from textworld.generator.vtypes import VariableTypeTree
 from textworld.generator.graph_networks import DIRECTIONS
 
@@ -44,18 +44,28 @@ class UnderspecifiedQuestError(NameError):
         super().__init__(msg)
 
 
-def gen_commands_from_actions(actions: Iterable[Action], kb: Optional[KnowledgeBase] = None) -> List[str]:
+def gen_commands_from_actions(actions: Iterable[Action], kb: Optional[KnowledgeBase] = None, 
+    compact_actions=False) -> List[str]:
     kb = kb or KnowledgeBase.default()
-    def _get_name_mapping(action):
+    def _get_name_mapping(action, compact_actions=False):
         mapping = kb.rules[action.name].match(action)
-        return {ph.name: var.name for ph, var in mapping.items()}
+        if not compact_actions:
+            return {ph.name: var.name for ph, var in mapping.items()}
+        else:
+            return {ph.name: var for ph, var in mapping.items()}
 
     commands = []
     for action in actions:
         command = "None"
         if action is not None:
             command = kb.inform7_commands[action.name]
-            command = command.format(**_get_name_mapping(action))
+            short_cmd_name = command.split(' ')[0] # assuming action name is first word in command sentence
+            name_mapping = _get_name_mapping(action, compact_actions)
+            if not compact_actions:
+                command = command.format(**name_mapping)
+            else:
+                cmd_args = [name_mapping[w.strip('{}')] for w in command.split(' ') if (('{' in w) and ('}' in w))]
+                command = CompactAction(name=short_cmd_name, vars=cmd_args)
 
         commands.append(command)
 
@@ -184,7 +194,8 @@ class Quest:
                  fail_events: Iterable[Event] = (),
                  reward: Optional[int] = None,
                  desc: Optional[str] = None,
-                 commands: Iterable[str] = ()) -> None:
+                 commands: Iterable[str] = (),
+                 actions: Optional[Iterable[Action]] = None) -> None:
         r"""
         Args:
             win_events: Mutually exclusive set of winning events. That is,
@@ -203,6 +214,7 @@ class Quest:
         self.fail_events = tuple(fail_events)
         self.desc = desc
         self.commands = tuple(commands)
+        self.actions = actions if actions else []
 
         # Unless explicitly provided, reward is set to 1 if there is at least
         # one winning events otherwise it is set to 0.
@@ -247,7 +259,8 @@ class Quest:
         commands = data.get("commands", [])
         reward = data["reward"]
         desc = data["desc"]
-        return cls(win_events, fail_events, reward, desc, commands)
+        actions = [Action.deserialize(a) for a in data["actions"]]
+        return cls(win_events, fail_events, reward, desc, commands, actions)
 
     def serialize(self) -> Mapping:
         """ Serialize this quest.
@@ -259,6 +272,7 @@ class Quest:
         data["desc"] = self.desc
         data["reward"] = self.reward
         data["commands"] = self.commands
+        data["actions"] = [action.serialize() for action in self.actions]
         data["win_events"] = [event.serialize() for event in self.win_events]
         data["fail_events"] = [event.serialize() for event in self.fail_events]
         return data
@@ -270,7 +284,7 @@ class Quest:
 
 class EntityInfo:
     """ Additional information about entities in the game. """
-    __slots__ = ['id', 'type', 'name', 'noun', 'adj', 'desc', 'room_type', 'definite', 'indefinite', 'synonyms']
+    __slots__ = ['id', 'type', 'name', 'noun', 'adj', 'desc', 'room_type']
 
     def __init__(self, id: str, type: str) -> None:
         #: str: Unique name for this entity. It is used when generating
@@ -283,12 +297,6 @@ class EntityInfo:
         self.noun = None
         #: str: The adjective (i.e. descriptive) part of the name, if available.
         self.adj = None
-        #: str: The definite article to use for this entity.
-        self.definite = None
-        #: str: The indefinite article to use for this entity.
-        self.indefinite = None
-        #: List[str]: Alternative names that can be used to refer to this entity.
-        self.synonyms = None
         #: str: Text description displayed when examining this entity in the game.
         self.desc = None
         #: str: Type of the room this entity belongs to. It used to influence
@@ -316,7 +324,7 @@ class EntityInfo:
         """
         info = cls(data["id"], data["type"])
         for slot in cls.__slots__:
-            setattr(info, slot, data.get(slot))
+            setattr(info, slot, data[slot])
 
         return info
 
@@ -352,15 +360,28 @@ class Game:
         self._infos = self._build_infos()
         self.kb = kb or KnowledgeBase.default()
         self.extras = {}
+        self._main_quest = None
 
-        # Check if we can derive a global winning policy from the quests.
-        self.main_quest = None
-        policy = GameProgression(self).winning_policy
-        if policy:
-            win_event = Event(actions=GameProgression(self).winning_policy)
-            self.main_quest = Quest(win_events=[win_event])
+    
+    @property
+    def main_quest(self):
+        """
+        Modified from original TW implementation, for simplicity we
+        currently don't use GameProgression but simply the quest
+        returned by the SketchGenerator.
+        """
+        if self._main_quest is None:
+            from textworld.generator.inform7 import Inform7Game
+            inform7 = Inform7Game(self)
+            desc = None
+            if len(self.quests) and self.quests[0].desc:
+                desc = self.quests[0].desc
+            self._main_quest = self.quests[0]
+            self._main_quest.desc = desc
+            self._main_quest.commands = inform7.gen_commands_from_actions(self._main_quest.actions)
+        return self._main_quest
+            
 
-        self.change_grammar(grammar)
 
     @property
     def infos(self) -> Dict[str, EntityInfo]:
@@ -426,7 +447,7 @@ class Game:
         """
         world = World.deserialize(data["world"])
         game = cls(world)
-        game.grammar = Grammar(data["grammar"])
+#        game.grammar = Grammar(data["grammar"])
         game.quests = tuple([Quest.deserialize(d) for d in data["quests"]])
         game._infos = {k: EntityInfo.deserialize(v) for k, v in data["infos"]}
         game.kb = KnowledgeBase.deserialize(data["KB"])
@@ -434,7 +455,7 @@ class Game:
         game._objective = data.get("objective", None)
         game.extras = data.get("extras", {})
         if "main_quest" in data:
-            game.main_quest = Quest.deserialize(data["main_quest"])
+            game._main_quest = Quest.deserialize(data["main_quest"])
 
         return game
 
@@ -446,7 +467,7 @@ class Game:
         """
         data = {}
         data["world"] = self.world.serialize()
-        data["grammar"] = self.grammar.options.serialize() if self.grammar else {}
+#        data["grammar"] = self.grammar.options.serialize() 
         data["quests"] = [quest.serialize() for quest in self.quests]
         data["infos"] = [(k, v.serialize()) for k, v in self._infos.items()]
         data["KB"] = self.kb.serialize()
@@ -895,6 +916,8 @@ class GameProgression:
     @property
     def valid_actions(self) -> List[Action]:
         """ Actions that are valid at the current state. """
+#        print("State is :", self.state)
+#        print("Actions available are: ", self._valid_actions)
         return self._valid_actions
 
     @property
@@ -955,14 +978,12 @@ class GameOptions:
             Minimum number of actions the quest requires to be completed.
         quest_breadth (int):
             Control how nonlinear a quest can be (1: linear).
-        path (str):
-            Path of the compiled game (.ulx or .z8). Also, the source (.ni)
-            and metadata (.json) files will be saved along with it.
+        games_dir (str):
+            Path to the directory where the game will be saved.
         force_recompile (bool):
             If `True`, recompile game even if it already exists.
-        file_ext (str):
+        file_type (str):
             Type of the generated game file. Either .z8 (Z-Machine) or .ulx (Glulx).
-            If `path` already has an extension, this is ignored.
         seeds (Optional[Union[int, Dict]]):
             Seeds for the different generation processes.
 
@@ -1002,11 +1023,8 @@ class GameOptions:
 
         self.nb_rooms = 1
         self.nb_objects = 1
-        self.quest_length = 1
         self.quest_breadth = 1
         self.force_recompile = False
-        self.file_ext = ".ulx"
-        self.path = "./tw_games/"
 
     @property
     def quest_length(self) -> int:

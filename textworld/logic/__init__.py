@@ -4,6 +4,8 @@
 
 from collections import Counter, defaultdict, deque, namedtuple
 from functools import total_ordering, lru_cache
+import itertools
+from dataclasses import dataclass
 import re
 from tatsu.model import NodeWalker
 import textwrap
@@ -60,6 +62,7 @@ from textworld.utils import uniquify, unique_product
 def _check_type_conflict(name, old_type, new_type):
     if old_type != new_type:
         raise ValueError("Conflicting types for `{}`: have `{}` and `{}`.".format(name, old_type, new_type))
+
 
 
 class _ModelConverter(NodeWalker):
@@ -1012,6 +1015,13 @@ class Action:
         if name is None:
             name = self.name
         return Action(name, self.postconditions, self.preconditions)
+    
+    def pre_variables(self) -> Iterable[Variable]:
+        vars = []
+        for prop in self.preconditions:
+            vars += prop.arguments
+        return tuple(vars)
+        
 
 
 class Rule:
@@ -1515,6 +1525,18 @@ class State:
                 return False
 
         return True
+    
+    def any_facts(self, props: Iterable[Proposition]) -> bool:
+        """
+        Returns True if any of the propositions are true in this state.
+        """
+
+        for prop in props:
+            if self.is_fact(prop):
+                return True
+
+        return False
+        
 
     @property
     def variables(self) -> Iterable[Variable]:
@@ -1851,3 +1873,16 @@ class State:
         lines.append("})")
 
         return "\n".join(lines)
+
+# Utility class to store Actions in compact form (only name + variables affected)
+@dataclass
+class CompactAction:
+    name: str
+    vars: List[Variable]
+    change_state_vars: List[Variable] = None # for quest construction purposes
+    
+    def __str__(self):
+        return "%s(%s)" % (self.name, ','.join([v.name for v in self.vars]))
+    
+    def __repr__(self):
+        return "%s(%s)" % (self.name, ','.join([v.name for v in self.vars]))

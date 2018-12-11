@@ -1,0 +1,53 @@
+# press_device
+type pd : sa {
+    predicates {
+
+    }
+
+    rules {
+            compact/p :: $at(P, r) & $at(pd, r) & $in(m, I) & powder(m) -> solid(m) & result_mod(m, pd);
+			compact/s :: $at(P, r) & $at(pd, r) & $in(m, I) & solid(m) -> solid(m) & result_mod(m, pd);
+    }
+
+    inform7 {
+        type {
+            kind :: "press_device";
+        }
+
+        predicates {
+
+        }
+
+        commands {
+            compact/s :: "compact {m} with {pd}" :: "compacting the {m}";
+			compact/p :: "compact {m} with {pd}" :: "compacting the {m}";
+        }
+
+        code ::
+        """
+		Compacting it with is an action applying to one carried thing and one touchable thing.
+		Understand "compact [material] with [thing]" as compacting it with.
+
+		Check compacting when the second noun is not a press_device:
+			unless the second noun is a material:
+				say "You can only compact [the noun] with a press_device." instead.
+
+		Check compacting when the noun is liquid:
+			say "You can only compact [the noun] if solid or powder." instead.
+
+		[Hack for single argument actions, since by default inform7 assumes the second noun is the first. Also, assuming one device, in the room]
+		Check compacting when the second noun is a material:
+			let D be a random press_device;
+			unless D is nothing:
+				try compacting the noun with D instead;
+
+		Carry out compacting:
+			if the noun provides the property state:
+				now the noun is solid;
+				now the second noun has processed the noun;
+
+		Report compacting:
+			say "Pressed!"
+        """;
+    }
+}

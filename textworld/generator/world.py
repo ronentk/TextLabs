@@ -321,7 +321,7 @@ class World:
                 obj.matching_entity_id = fact.arguments[1].name
                 other_obj.matching_entity_id = fact.arguments[0].name
 
-            if fact.name in ["in", "on", "at"]:
+            if fact.name in ["in", "on", "at", "potential"]:
                 holder = self._get_entity(fact.arguments[1])
                 holder.content.append(obj)
 
@@ -487,6 +487,7 @@ class World:
         self.add_facts(state)
         return state
 
+    
     def populate(self, nb_objects: int,
                  rng: Optional[RandomState] = None,
                  object_types_probs: Optional[Dict[str, float]] = None) -> List[Proposition]:

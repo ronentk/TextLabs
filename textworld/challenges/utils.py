@@ -21,17 +21,17 @@ def get_seeds_for_game_generation(seeds: Optional[Union[int, Dict[str, int]]] = 
         If a int, it acts as a seed for a random generator that will be
             used to sample the other seeds.
         If dict, the following keys can be set:
-                'seed_map': control the map generation;
-                'seed_objects': control the type of objects and their location;
-                'seed_quest': control the quest generation;
-                'seed_grammar': control the text generation;
+                'map': control the map generation;
+                'objects': control the type of objects and their location;
+                'quest': control the quest generation;
+                'surface': control the text generation;
             For any key missing, a random number gets assigned (sampled from `textworld.g_rng`).
 
     Returns
     -------
         Seeds that will be used for the game generation.
     """
-    keys = ['seed_map', 'seed_objects', 'seed_quest', 'seed_grammar']
+    keys = ['map', 'objects', 'quest', 'surface']
 
     def _key_missing(seeds):
         return not set(seeds.keys()).issuperset(keys)

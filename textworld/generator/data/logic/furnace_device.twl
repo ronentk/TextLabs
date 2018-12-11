@@ -1,0 +1,61 @@
+# furnace_device
+type fd : sa {
+    predicates {
+
+    }
+
+    rules {
+            melt/p :: $at(P, r) & $at(fd, r) & $in(m, I) & powder(m) -> liquid(m) & result_mod(m, fd);
+			melt/s :: $at(P, r) & $at(fd, r) & $in(m, I) & solid(m) -> liquid(m) & result_mod(m, fd);
+			melt/l :: $at(P, r) & $at(fd, r) & $in(m, I) & liquid(m) -> liquid(m) & result_mod(m, fd);
+
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "furnace_device";
+        }
+
+        predicates {
+
+        }
+
+        commands {
+            melt/p :: "melt {m} with {fd}" :: "melting the {m}";
+			melt/s :: "melt {m} with {fd}" :: "melting the {m}";
+			melt/l :: "melt {m} with {fd}" :: "melting the {m}";
+
+        }
+
+        code ::
+        """
+		Melting it with is an action applying to one carried thing and one touchable thing.
+		Understand "melt [material] with [thing]" as melting it with.
+
+		Check melting when the second noun is not a furnace_device:
+			unless the second noun is a material:
+				say "You can only melt [the noun] with a furnace_device." instead.
+
+		[Hack for single argument actions, since by default inform7 assumes the second noun is the first. Also, assuming one device, in the room]
+		Check melting when the second noun is a material:
+			let D be a random furnace_device;
+			unless D is nothing:
+				try melting the noun with D instead;
+
+		Carry out melting:
+			if the noun provides the property state:
+				now the noun is liquid;
+				now the second noun has processed the noun;
+
+		Report melting:
+			say "Melted!"
+
+        """;
+    }
+}

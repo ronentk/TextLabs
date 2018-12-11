@@ -1,0 +1,33 @@
+# material
+type m : o {
+    predicates {
+        powder(m);
+        liquid(m);
+        solid(m);
+    }
+
+    rules {
+
+    }
+
+    constraints {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "material";
+            definition :: "A material can be solid, powder or liquid (this is its state property).";
+        }
+
+        predicates {
+            solid(m) :: "The {m} is solid";
+            liquid(m) :: "The {m} is liquid";
+            powder(m) :: "The {m} is powder";
+        }
+
+        commands {
+
+        }
+    }
+}

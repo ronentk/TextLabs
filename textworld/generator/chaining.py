@@ -40,10 +40,11 @@ class Chain:
         actions: The sequence of actions forming this quest.
     """
 
-    def __init__(self, initial_state: State, nodes: Sequence[ChainNode]):
+    def __init__(self, initial_state: State, nodes: Sequence[ChainNode], final_state: Optional[State] = None):
         self.initial_state = initial_state
         self.nodes = tuple(nodes)
         self.actions = tuple(node.action for node in nodes)
+        self.final_state = final_state
 
     def __str__(self):
         string = "Chain([\n"
@@ -218,6 +219,8 @@ class _Node:
         self.used = used
         self.depth = depth
         self.breadth = breadth
+        self.data = {}
+        self.valid = True
 
 
 class _Chainer:
@@ -260,8 +263,9 @@ class _Chainer:
             if not action:
                 continue
 
-            if not self.check_action(node, node.state, action):
-                continue
+# Some navigation related stuff, seems like it can cause trouble with the AStar search
+#            if not self.check_action(node, action):
+#                continue
 
             state = self.apply(node, action)
             if not state:
@@ -406,8 +410,8 @@ class _Chainer:
 
     def apply(self, node: _Node, action: Action) -> Optional[State]:
         """Attempt to apply an action to the given state."""
-
         new_state = node.state.copy()
+#        print("Attempting to apply action %s to state %s" % (action, new_state))
         for prop in action.preconditions:
             new_state.add_fact(prop)
 
@@ -416,7 +420,8 @@ class _Chainer:
             return None
 
         new_state.apply(action)
-
+#        print("New state is %s" % (new_state))
+        # Removed assertion for check state since we can allow actions out of constraints but won't expand them
         if not self.check_state(new_state):
             return None
 
@@ -446,7 +451,7 @@ class _Chainer:
 
     def make_chain(self, node):
         """Create an entire Chain object from a node."""
-
+        final_state = node.state
         nodes = []
         parent = node
         while parent.action:
@@ -474,7 +479,7 @@ class _Chainer:
                 state.apply(node.action.inverse())
             chain = chain[::-1]
 
-        return Chain(state, chain)
+        return Chain(state, chain, final_state)
 
 
 def get_chains(state: State, options: ChainingOptions) -> Iterable[Chain]:

@@ -413,7 +413,12 @@ def describe_event(event: Event, game: Game, grammar: Grammar) -> str:
 
     if len(event.actions) == 0:
         # We don't need to say anything if the quest is empty
-        event_desc = ""
+        quest_desc = "Choose your own adventure!"
+    # If quest has description already, use it
+    elif desc:
+        quest_desc = desc
+    elif not grammar:
+        quest_desc = "No grammar. Supply manual description"
     else:
         # Generate a description for either the last, or all commands
         if grammar.options.only_last_action:

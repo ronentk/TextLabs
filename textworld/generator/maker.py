@@ -54,6 +54,9 @@ class ExitAlreadyUsedError(ValueError):
 class PlayerAlreadySetError(ValueError):
     pass
 
+class QuestNotFoundError(ValueError):
+    pass
+
 
 class FailedConstraintsError(ValueError):
     """
@@ -148,6 +151,8 @@ class WorldEntity:
         """ Add children to this entity. """
         if KnowledgeBase.default().types.is_descendant_of(self.type, "r"):
             name = "at"
+        elif KnowledgeBase.default().types.is_descendant_of(self.type, ["lc"]):
+            name = "potential"
         elif KnowledgeBase.default().types.is_descendant_of(self.type, ["c", "I"]):
             name = "in"
         elif KnowledgeBase.default().types.is_descendant_of(self.type, "s"):
@@ -388,7 +393,7 @@ class GameMaker:
         return self.new(type='r', name=name, desc=desc)
 
     def new(self, type: str, name: Optional[str] = None,
-            desc: Optional[str] = None) -> Union[WorldEntity, WorldRoom]:
+            desc: Optional[str] = None, absolute_name: Optional[str] = None) -> Union[WorldEntity, WorldRoom]:
         """ Creates new entity given its type.
 
         Args:
@@ -406,6 +411,10 @@ class GameMaker:
         if not KnowledgeBase.default().types.is_constant(type):
             var_id = get_new(type, self._types_counts)
 
+        # Allow creation of variables with an absolute name that will be pre-known
+        if absolute_name:
+            var_id = absolute_name
+            
         var = Variable(var_id, type)
         if type == "r":
             entity = WorldRoom(var, name, desc)
@@ -575,7 +584,7 @@ class GameMaker:
 
         # Skip "None" actions.
         actions = [action for action in recorder.actions if action is not None]
-
+#        print("Recorded %d winning actions, they are: %s" % (len(actions), actions))
         # Ask the user which quests have important state, if this is set
         # (if not, we assume the last action contains all the relevant facts)
         winning_facts = None
@@ -711,10 +720,7 @@ class GameMaker:
             Path to the game file.
         """
         self._working_game = self.build()
-        options = textworld.GameOptions()
-        options.path = path
-        options.force_recompile = True
-        game_file = textworld.generator.compile_game(self._working_game, options)
+        game_file = textworld.generator.compile_game(self._working_game, path, force_recompile=True)
         return game_file
 
     def __contains__(self, entity) -> bool:

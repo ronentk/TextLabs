@@ -1,0 +1,30 @@
+# mixture
+type mx : m {
+    predicates {
+
+    }
+
+    rules {
+
+    }
+
+    constraints {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "mixture";
+            definition :: "A mixture is a kind of material. A composition is a kind of unopenable container. One composition is part of every mixture. A composition is always closed. The state of a mixture is usually powder.";
+        }
+
+        predicates {
+
+        }
+
+        commands {
+
+        }
+
+    }
+}

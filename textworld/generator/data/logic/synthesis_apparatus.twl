@@ -1,0 +1,18 @@
+# synthesis_apparatus
+type sa : t{
+    predicates {
+
+		result_mod(m, sa);
+
+    }
+
+    inform7 {
+        type {
+            kind :: "synthesis_apparatus";
+        }
+
+        predicates {
+			result_mod(m, sa) :: "The {sa} has processed the {m}";
+        }
+    }
+}
