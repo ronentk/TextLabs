@@ -52,7 +52,7 @@ setup(
     scripts=[
         "scripts/tw-data",
         "scripts/tw-play",
-        "scripts/tw-make",
+        "scripts/tw-make-lab",
         "scripts/tw-stats",
         "scripts/tw-extract",
     ],
