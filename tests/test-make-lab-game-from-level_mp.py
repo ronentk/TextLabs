@@ -64,7 +64,7 @@ if __name__ == "__main__":
                'level': param_dict['level'],
                'seed': param_dict['lab_game_options'].seeds
                }
-        row.update(param_dict['lab_game_options'].surface_gen_options.serialize())
+        
         if game:
             row.update(game.metadata)
         rows.append(row)

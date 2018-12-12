@@ -121,6 +121,7 @@ def make_game(mode: str, lab_game_options: LabGameOptions
     metadata["seeds"] = seeds
     metadata["world_size"] = 1 # Single room always 
     metadata["max_quest_length"] = max_quest_length
+    metadata["surface_gen_options"] = surface_gen_options.serialize()
 
     rng_objects = np.random.RandomState(seeds['objects'])
     rng_quest = np.random.RandomState(seeds['quest'])
