@@ -14,17 +14,9 @@ def test_game_walkthrough_agent(game_file):
         agent = textworld.agents.WalkthroughAgent()
         env = textworld.start(game_file)
         env.enable_extra_info("score")
-        commands = env.game.main_quest.commands
         agent.reset(env)
-        game_state = env.reset()
-
-        reward = 0
-        done = False
-        for walkthrough_command in commands:
-            command = agent.act(game_state, reward, done)
-            game_state, reward, done = env.step(command)
-        assert(done)
-        assert(reward == 1)
+        stats = textworld.play(game_file, agent=agent, silent=True)
+        assert(stats['score'] == 1)
 
 
 if __name__ == "__main__":
@@ -42,7 +34,7 @@ if __name__ == "__main__":
     pg.draw()
     
     with make_temp_directory(prefix="test_tw-make") as tmpdir:
-        output_folder = "gen_games"
+        output_folder = Path(tmpdir) / "gen_games"
         game_file = Path(output_folder) / ("%s.ulx" % (game.metadata["uuid"]))
         game_file = textworld.generator.compile_game(game, lab_game_options)
         # Solve the game using WalkthroughAgent.
