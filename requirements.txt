@@ -24,6 +24,9 @@ pydot>=1.2.4
 pygraphviz==1.5
 matplotlib==3.0.2
 
+# For testing statistics
+pandas==0.23.4
+
 # For advanced prompt
 prompt_toolkit<2.1.0,>=2.0.0
 
