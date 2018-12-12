@@ -17,7 +17,9 @@ from textworld.generator.lab_game import LabGameOptions
 from textworld.generator.game import Game, Quest, Event, World, GameOptions
 from textworld.generator.graph_networks import create_map, create_small_map
 from textworld.generator.text_generation import generate_text_from_grammar
+
 from textworld.generator import data
+from textworld.generator import inform7
 from textworld.generator.inform7 import generate_inform7_source, compile_inform7_game
 from textworld.generator.inform7 import CouldNotCompileGameError
 
@@ -29,12 +31,6 @@ from textworld.generator.logger import GameLogger
 
 from textworld.generator.sketch_generator import SketchGenerationOptions, WinConditionType
 from textworld.generator.surface_generator import SurfaceGenerator
-
-import sys
-from pathlib import Path
-root = Path(__file__).parent.absolute()
-sys.path.insert(0, str(root))
-
 
 
 class TextworldGenerationWarning(UserWarning):
@@ -151,7 +147,7 @@ def make_game_with(world, quests=None, grammar=None):
     game = Game(world, grammar, quests)
     if grammar is None:
         for var, var_infos in game.infos.items():
-            var_infos.name = var
+            var_infos.name = var.name
     else:
         game = generate_text_from_grammar(game, grammar)
 
@@ -300,30 +296,30 @@ def make_lab_game(options: LabGameOptions) -> Game:
     game.metadata["uuid"] = uuid
     return game
 
-def compile_game(game: Game, path: str, force_recompile: bool = False):
+def compile_game(game: Game, options: Optional[GameOptions] = None):
     """
     Compile a game.
 
     Arguments:
         game: Game object to compile.
-        path: Path of the compiled game (.ulx or .z8). Also, the source (.ni)
-              and metadata (.json) files will be saved along with it.
-        force_recompile: If `True`, recompile game even if it already exists.
+        options:
+            For customizing the game generation (see
+            :py:class:`textworld.GameOptions <textworld.generator.game.GameOptions>`
+            for the list of available options).
+
 
     Returns:
         The path to compiled game.
     """
-
-    folder, filename = os.path.split(path)
+    options = options or GameOptions()
+    
+    folder, filename = os.path.split(options.path)
     if not filename:
         filename = game.metadata.get("uuid", str(uuid.uuid4()))
 
     filename, ext = os.path.splitext(filename)
     if not ext:
         ext = ".ulx"  # Add default extension, if needed.
-
-    if str2bool(os.environ.get("TEXTWORLD_FORCE_ZFILE", False)):
-        ext = ".z8"
 
     source = generate_inform7_source(game)
 
@@ -332,14 +328,14 @@ def compile_game(game: Game, path: str, force_recompile: bool = False):
     game_file = pjoin(folder, filename + ext)
 
     already_compiled = False  # Check if game is already compiled.
-    if not force_recompile and os.path.isfile(game_file) and os.path.isfile(game_json):
+    if not options.force_recompile and os.path.isfile(game_file) and os.path.isfile(game_json):
         already_compiled = game == Game.load(game_json)
         msg = ("It's highly unprobable that two games with the same id have different structures."
                " That would mean the generator has been modified."
                " Please clean already generated games found in '{}'.".format(folder))
         assert already_compiled, msg
 
-    if not already_compiled or force_recompile:
+    if not already_compiled or options.force_recompile:
         game.save(game_json)
         compile_inform7_game(source, game_file)
 

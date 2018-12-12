@@ -264,7 +264,8 @@ class _Chainer:
             if not action:
                 continue
 
-# Some navigation related stuff, seems like it can cause trouble with the AStar search
+# Some navigation related stuff, seems like it can cause trouble 
+# with our search
 #            if not self.check_action(node, action):
 #                continue
 
@@ -412,7 +413,6 @@ class _Chainer:
     def apply(self, node: _Node, action: Action) -> Optional[State]:
         """Attempt to apply an action to the given state."""
         new_state = node.state.copy()
-#        print("Attempting to apply action %s to state %s" % (action, new_state))
         for prop in action.preconditions:
             new_state.add_fact(prop)
 
@@ -421,7 +421,6 @@ class _Chainer:
             return None
 
         new_state.apply(action)
-#        print("New state is %s" % (new_state))
         # Removed assertion for check state since we can allow actions out of constraints but won't expand them
         if not self.check_state(new_state):
             return None
@@ -480,7 +479,9 @@ class _Chainer:
                 state.apply(node.action.inverse())
             chain = chain[::-1]
 
-        return Chain(state, chain, final_state)
+        final_chain = Chain(state, chain)
+        final_chain.final_state = final_state
+        return final_chain
 
 
 def get_chains(state: State, options: ChainingOptions) -> Iterable[Chain]:

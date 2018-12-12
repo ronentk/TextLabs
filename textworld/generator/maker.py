@@ -393,7 +393,7 @@ class GameMaker:
         return self.new(type='r', name=name, desc=desc)
 
     def new(self, type: str, name: Optional[str] = None,
-            desc: Optional[str] = None, absolute_name: Optional[str] = None) -> Union[WorldEntity, WorldRoom]:
+            desc: Optional[str] = None) -> Union[WorldEntity, WorldRoom]:
         """ Creates new entity given its type.
 
         Args:
@@ -410,10 +410,6 @@ class GameMaker:
         var_id = type
         if not KnowledgeBase.default().types.is_constant(type):
             var_id = get_new(type, self._types_counts)
-
-        # Allow creation of variables with an absolute name that will be pre-known
-        if absolute_name:
-            var_id = absolute_name
             
         var = Variable(var_id, type)
         if type == "r":

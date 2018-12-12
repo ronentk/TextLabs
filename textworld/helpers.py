@@ -8,8 +8,8 @@ from typing import Optional, Mapping, Tuple
 from textworld.utils import g_rng
 
 from textworld.core import Environment, Agent
-from textworld.generator.game import Game, GameOptions
-
+from textworld.generator.game import Game
+from textworld.generator.lab_game import LabGameOptions
 from textworld.envs import GlulxEnvironment
 from textworld.envs import JerichoEnvironment
 
@@ -107,7 +107,7 @@ def play(game_file: str, agent: Optional[Agent] = None, max_nb_steps: int = 1000
     return stats
 
 
-def make_custom_lab(options: GameOptions, path: str) -> Tuple[str, Game]:
+def make_custom_lab(options: LabGameOptions) -> Tuple[str, Game]:
     """ Makes a text-based game.
 
     Arguments:
@@ -122,5 +122,5 @@ def make_custom_lab(options: GameOptions, path: str) -> Tuple[str, Game]:
         A tuple containing the path to the game file, and its corresponding Game's object.
     """
     game = make_lab_game(options)
-    game_file = compile_game(game, path, force_recompile=True)
+    game_file = compile_game(game, options)
     return game_file, game
