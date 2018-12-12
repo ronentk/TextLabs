@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
+import os
+import sys
+import argparse
+from pathlib import Path
+from os.path import join as pjoin
+
+import numpy as np
+
+import textworld
+import textworld.challenges
+
+
+def _get_available_challenges():
+    challenges = []
+    for challenge in textworld.challenges.CHALLENGES:
+        challenges.append("tw-{}-level{{N}}".format(challenge))
+
+    return challenges
+
+def exit_listing_challenges(challenge=None):
+    msg = ""
+    if challenge is not None:
+        msg += "Unknown challenge: {}\n\n".format(args.challenge)
+
+    msg += "Available challenges:\n  "
+    msg += "\n  ".join(_get_available_challenges())
+    msg += "\nwhere {N} is an integer."
+    print(msg)
+    sys.exit(1)
+
+
+def parse_args():
+    general_parser = argparse.ArgumentParser(add_help=False)
+
+    general_group = general_parser.add_argument_group('General settings')
+    general_group.add_argument("--output", default="./tw_games/", metavar="PATH",
+                               help="Path where to save the generated game.")
+    general_group.add_argument('--seed', type=int)
+# TODO support visualization    
+#    general_group.add_argument("--view", action="store_true",
+#                               help="Display the resulting game.")
+    general_group.add_argument("-v", "--verbose", action="store_true")
+    general_group.add_argument("-f", "--force", action="store_true")
+
+    surface_gen_group = general_parser.add_argument_group('Surface generation settings')
+    
+    surface_gen_group.add_argument("--surface_mode", type=str, default="medium", metavar="MODE",
+                               help="Surface generation difficulty mode {easy, medium, hard}.")
+    
+    surface_gen_group.add_argument("--merge_serial_actions", action="store_true",
+                           help="Merge serial actions (grind X. melt X -> grind and melt X).")
+    surface_gen_group.add_argument("--merge_parallel_actions", action="store_true",
+                           help="Merge actions performed in parallel (mix X. Mix Y. Mix Z -> mix X,Y and Z).")
+
+    parser = argparse.ArgumentParser(parents=[general_parser])
+    subparsers = parser.add_subparsers(dest="subcommand", help='Kind of game to make.')
+
+    custom_parser = subparsers.add_parser("custom", parents=[general_parser],
+                                          help='Make a custom TextLab game.')
+    
+    custom_parser.add_argument("--lab_config_path", type=str, metavar="PATH",
+                               help="Path to file containing lab configuration.")
+    custom_parser.add_argument("--max_quest_length", type=int, metavar="LENGTH",
+                               default=10,
+                               help="Maximum number of actions comprising quest.")
+    custom_parser.add_argument("--max_search_steps", type=int, metavar="STEPS",
+                               default=1000,
+                               help="Maximum number of steps for quest generation search.")
+    
+
+    challenge_parser = subparsers.add_parser("challenge", parents=[general_parser],
+                                             help='Generate a game for one of the challenges.')
+    challenge_parser.add_argument("--challenge",
+                                  help="Name of the builtin challenges, e.g. `tw-lab_game-level21`")
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    if args.seed is None:
+        args.seed = np.random.randint(65635)
+
+    print("Global seed: {}".format(args.seed))
+
+    options = textworld.LabGameOptions()
+    options.seeds = args.seed
+    options.surface_gen_options.difficulty_mode = args.surface_mode
+    options.surface_gen_options.merge_parallel_actions = args.merge_parallel_actions
+    options.surface_gen_options.merge_serial_actions = args.merge_serial_actions
+
+    if args.subcommand == "custom":
+        options.load_lab_config(Path(args.lab_config_path))
+        options.sketch_gen_options.max_depth = args.max_quest_length
+        options.sketch_gen_options.max_steps = args.max_search_steps
+        options.path = args.output
+        game_file, game = textworld.make_custom_lab(options, )
+                
+
+    elif args.subcommand == "challenge":
+        from textworld.challenges import CHALLENGES
+        print(args.challenge)
+        _, challenge, level = args.challenge.split("-")
+        if challenge not in CHALLENGES:
+            raise ValueError("Unknown challenge: {}".format(args.challenge))
+
+        level = int(level.lstrip("level"))
+        make_game = CHALLENGES[challenge]
+        game = make_game(level, options)
+        game_file = textworld.generator.compile_game(game, options)
+
+    print("Game generated: {}".format(game_file))
+    if args.verbose:
+        print(game.objective)
+
+#    if args.view:
+#        textworld.render.visualize(game, interactive=True)
