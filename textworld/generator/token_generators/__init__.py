@@ -21,7 +21,7 @@ def grab(token_name, *args, **kwargs):
             module_name = token_name
             class_name = normalize_name(token_name)
 
-        token_module = import_module('.' + module_name, package='token_generators')
+        token_module = import_module('.' + module_name, package='textworld.generator.token_generators')
 
         token_class = getattr(token_module, class_name)
 
