@@ -102,7 +102,7 @@ def _detect_extra_infos(text: str) -> Mapping[str, str]:
     tags = ["description", "inventory", "score"]
     matches = {}
     for tag in tags:
-        regex = re.compile(r"<{tag}>\n(.*)</{tag}>".format(tag=tag), re.DOTALL)
+        regex = re.compile(r"<{tag}>\n(.*)\n</{tag}>".format(tag=tag), re.DOTALL)
         match = re.search(regex, text)
         if match:
             _, cleaned_text = _detect_i7_events_debug_tags(match.group(1))

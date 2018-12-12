@@ -319,7 +319,7 @@ def compile_game(game: Game, options: Optional[GameOptions] = None):
 
     filename, ext = os.path.splitext(filename)
     if not ext:
-        ext = ".ulx"  # Add default extension, if needed.
+        ext = options.file_ext  # Add default extension, if needed.
 
     source = generate_inform7_source(game)
 
