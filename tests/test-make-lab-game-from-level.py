@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Nov 19 12:10:30 2018
 
-@author: rlvn-25
-"""
 from pathlib import Path
 from textworld.challenges.lab_game import make_game_from_level
 from textworld.generator.lab_game import LabGameOptions
