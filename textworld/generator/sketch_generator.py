@@ -110,32 +110,6 @@ class DeviceObjectives:
         return _copy
         
 
-#def gen_lab_commands_from_actions(actions, compact_actions=False, full_action_name=False):
-#    def _get_name_mapping(action, compact_actions=False):
-#        mapping = data.get_rules()[action.name].match(action)
-#        if not compact_actions:
-#            return {ph.name: var.name for ph, var in mapping.items()}
-#        else:
-#            return {ph.name: var for ph, var in mapping.items()}
-#
-#    commands = []
-#    for action in actions:
-#        command = "None"
-#        if action is not None:
-#            command = data.INFORM7_COMMANDS[action.name]
-#            short_cmd_name = command.split(' ')[0] # assuming action name is first word in command sentence
-#            name_mapping = _get_name_mapping(action, compact_actions)
-#            if not compact_actions:
-#                command = command.format(**name_mapping)
-#            else:
-#                cmd_args = [name_mapping[w.strip('{}')] for w in command.split(' ') if (('{' in w) and ('}' in w))]
-#                command = CompactAction(name=action.name if full_action_name else short_cmd_name, vars=cmd_args)
-#
-#        commands.append(command)
-#
-#    return commands
-
-
 class SketchGenerator:
     """
     Helper class for generating quests (sketches) consistent with domain 
@@ -233,6 +207,19 @@ def heur_mix_base_mat(node: _Node) -> bool:
     target_mat = convert_to_compact_action(action).vars[0]
     return target_mat.type == 'm'
 
+def check_open_close_act(node: _Node) -> bool:
+    """ Check whether this action was open/close on a lab_container type """
+    if not node.action:
+        return False
+    c_act = convert_to_compact_action(node.action)
+    short_action_name = c_act.name.split('/')[0]
+    return (short_action_name in ['open', 'close'] and 
+    KnowledgeBase.default().types.is_descendant_of(
+                                c_act.vars[0].type,'lc'))
+        
+        
+    
+
 def check_name_in_prop_list(name: str, prop_list: Sequence[Proposition]) -> bool:
         for prop in prop_list:
             if name in prop.names:
@@ -269,6 +256,11 @@ class LabSketchGenerator(SketchGenerator):
         # Reward mixing a base material into a mixture
         if heur_mix_base_mat(node):
             score -= 3
+        # Penalize open/closing a container (not needed in these quests)
+        if check_open_close_act(node):
+            score += 5
+        
+        
         return score
     
     def get_start_materials(self) -> List[str]:
