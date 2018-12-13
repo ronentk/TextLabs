@@ -1,18 +1,38 @@
-# TextWorld
-[![Build Status](https://travis-ci.org/Microsoft/TextWorld.svg?branch=master)](https://travis-ci.org/Microsoft/TextWorld) [![PyPI version](https://badge.fury.io/py/textworld.svg)](https://badge.fury.io/py/textworld)
 
-A text-based game generator and extensible sandbox learning environment for training and testing reinforcement learning (RL) agents. Also check out aka.ms/textworld for more info about TextWorld and its creators.
+# TextLabs
+Adaptation of [TextWorld](https://github.com/Microsoft/TextWorld) text-based reinforcement learning (RL) environment for materials synthesis procedures analysis. This is intended to be a proof-of-concept for "Text2Quest", a new approach to structured information/relation extraction, by which text is interpreted as a game, whose solution by a text-based RL agent is equivalent to the successful extraction of the required information.
+
+More formally, the objective is the extraction of an *action graph* $K$ from unstructured natural language *surface text* $X$.
+
+An example from the materials science domain:
+XXX
+
+We approach this from a reinforcement learning perspective, where an agent will be trained on increasingly harder generated texts simulating materials synthesis procedures (attempting to approach something like $X$ above). Each text is interpreted as instructions for solving a game, and reward is obtained by successfully following them.
+
+For a detailed system overview, refer to the [paper](https://arxiv.org/abs/1811.04319).
+
+This repository is essentially a fork of TextWorld ([version 1.0.0
+](https://github.com/Microsoft/TextWorld/tree/1.0.0/textworld)) with the following main modifications:
+
+ - Incorporation of domain specific "lab" entities and logic in the Textworld knowledge base.
+  - A `SketchGenerator` for generating materials synthesis "quests" consistent with the domain-specific logic. This is similar in function (and utilizes) the existing `Chainer` helper class.
+ - Surface Generator for generating the quest instructions for the generated quests. This replaces the TextWorld `TextGrammar`.
+ -  A new "lab challenge" for Textworld.
+
+Note that the implementations are still preliminary and are under active development!
+
+Following are the Textworld installation and usage instructions, which we follow with minor modifications.
 
 ## Installation
 
-TextWorld requires __Python 3__ and only supports __Linux__ and __macOS__ systems at the moment.
+TextWorld requires __Python 3__ and only supports __Linux__ and __macOS__ systems at the moment. We have only tested TextLabs in __Linux__ environments.
 
 ### Requirements
 
 TextWorld requires some system libraries for its native components.
 On a Debian/Ubuntu-based system, these can be installed with
 
-    sudo apt install build-essential libffi-dev python3-dev curl git
+    sudo apt install build-essential uuid-dev libffi-dev python3-dev curl git
 
 And on macOS, with
 
@@ -20,38 +40,44 @@ And on macOS, with
 
 ### Installing TextWorld
 
-The easiest way to install TextWorld is via [`pip`](https://pypi.org/):
+The easiest way to install TextWorld is via [`pip`](https://pypi.org/).
 
-    pip install textworld
-
-Or, after cloning the repo, go inside the root folder of the project (i.e. alongside `setup.py`) and run
+After cloning the repo, go inside the root folder of the project (i.e. alongside `setup.py`) and run
 
     pip install .
 
 ### Extras
 
-In order to use the `take_screenshot` or `visualize` functions in `textworld.render`, you'll need to install either the [Chrome](https://sites.google.com/a/chromium.org/chromedriver/) or [Firefox](https://github.com/mozilla/geckodriver) webdriver (depending on which browser you have installed).
-If you have Chrome already installed you can use the following command to install chromedriver
-
-    pip install chromedriver_installer
+TextWorld's visualization options aren't yet supported for TextLabs.
 
 
 ## Usage
 
-### Generating a game
+### Generating a game (command-line)
 
-TextWorld provides an easy way of generating simple text-based games via the `tw-make` script. For instance,
+TextLabs text-based games can be generated via the `tw-make-lab` script. Two main modes are currently available:
 
-    tw-make custom --world-size 5 --nb-objects 10 --quest-length 5 --seed 1234 --output gen_games/
+#### Custom
 
-where `custom` indicates we want to customize the game using the following options: `--world-size` controls the number of rooms in the world, `--nb-objects` controls the number of objects that can be interacted with (excluding doors) and `--quest-length` controls the minimum number of commands that is required to type in order to win the game. Once done, the game `game_1234.ulx` will be saved in the `gen_games/` folder.
+    tw-make-lab custom --lab_config_path notebooks/example_lab_config.json --surface_mode medium --merge_parallel_actions --merge_serial_actions --max_quest_length 15 --seed 1234 --output gen_games/game_1234.ulx
 
+`custom` indicates we want to customize the game using the following options: `--max_quest_length` controls the maximum number of actions comprising the minimal winning policy, `--lab_config_path` is the path to a file containing an initial lab configuration (see for example XXX) . Once done, the game will be saved in the `gen_games/` folder.  `--surface_mode` controls the generated text difficulty, `--merge_serial_actions` and `--merge_parallel_actions` are additional flags controlling text generation.
+
+#### Challenge
+
+    tw-make-lab challenge --seed 1234 --output gen_games/game_1234.ulx --challenge tw-lab_game-level12
+
+`challenge` indicates we want to create a random game, where `--challenge` specifies the type of challenge and difficulty level. Under this mode, text generation flags are currently set automatically.
+
+### Generating a game (notebook)
+
+Alternatively, games can be hand-crafted in a Jupyter Notebook environment. For details, see XXX
 
 ### Playing a game (terminal)
 
 To play a game, one can use the `tw-play` script. For instance, the command to play the game generated in the previous section would be
 
-    tw-play gen_games/simple_game.ulx
+    tw-play gen_games/game_1234.ulx
 
 > **Note:** Only Z-machine's games (*.z1 through *.z8) and Glulx's games (*.ulx) are supported.
 
@@ -92,42 +118,22 @@ print("avg. steps: {:5.1f}; avg. score: {:4.1f} / 1.".format(sum(avg_moves)/N, s
 ## Documentation
 For more information about TextWorld, check the [documentation](https://aka.ms/textworld-docs).
 
-## Notebooks
-Check the [notebooks](notebooks) provided with the framework to see how the framework can be used.
-
-## Citing TextWorld
-If you use TextWorld, please cite the following BibTex:
+## Citing TextLabs
+If you use TextLabs, please cite the following BibTex:
 ```
-@Article{cote18textworld,
-  author = {Marc-Alexandre C\^ot\'e and
-            \'Akos K\'ad\'ar and
-            Xingdi Yuan and
-            Ben Kybartas and
-            Tavian Barnes and
-            Emery Fine and
-            James Moore and
-            Matthew Hausknecht and
-            Layla El Asri and
-            Mahmoud Adada and
-            Wendy Tay and
-            Adam Trischler},
-  title = {TextWorld: A Learning Environment for Text-based Games},
-  journal = {CoRR},
-  volume = {abs/1806.11532},
-  year = {2018}
+@article{Tamari2018PlayingBT,
+title={Playing by the Book: Towards Agent-based Narrative Understanding through Role-playing and Simulation},
+author={Ronen Tamari and Hiroyuki Shindo and Dafna Shahaf and Yuji Matsumoto},
+journal={CoRR},
+year={2018},
+volume={abs/1811.04319}
 }
 ```
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.microsoft.com.
+This project welcomes contributions and suggestions.
 
-When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+## Todos
+- [ ] Baseline RL agent
+- [ ]  More complex surface texts.
