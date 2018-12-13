@@ -136,4 +136,5 @@ This project welcomes contributions and suggestions.
 
 ## Todos
 - [ ] Baseline RL agent
-- [ ]  More complex surface texts.
+- [ ] More complex surface texts.
+- [ ] Add `GameInitializer` component
