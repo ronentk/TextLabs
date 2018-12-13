@@ -1,3 +1,5 @@
+TextLabs v1.0
+Copyright (c) Ronen Tamari
 TextWorld v1.0
 Copyright (c) Microsoft Corporation
 All rights reserved.
