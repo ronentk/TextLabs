@@ -31,16 +31,16 @@ def test_make_custom_lab_game():
         
         # Solve the game using WalkthroughAgent.
         agent = textworld.agents.WalkthroughAgent()
-        stats = textworld.play(game_file, agent=agent, silent=False)
+        stats = textworld.play(game_file, agent=agent, silent=True)
         assert(stats['score'] == 1)
     
 def test_make_lab_game_from_level():
-    seed = "32433063"
+    seed = "3311063"
     level = 22
     with make_temp_directory(prefix="test_tw-make-lab") as tmpdir:
         output_folder = pjoin(tmpdir, "gen_games")
         game_file = pjoin(output_folder, "challenge_game%d_%s.ulx" % (level,seed))
-        command = ["tw-make-lab", "challenge", "--seed", seed , "--output", game_file, "--surface_mode", "medium", "--merge_serial_actions", "--merge_parallel_actions", "--challenge", "tw-lab_game-level%d" % (level)]
+        command = ["tw-make-lab", "challenge", "--seed", seed , "--output", game_file, "--challenge", "tw-lab_game-level%d" % (level)]
         print(' '.join(command))
         try:
             assert check_call(command) == 0
@@ -54,8 +54,11 @@ def test_make_lab_game_from_level():
         # Solve the game using WalkthroughAgent.
         print("Solving game")
         agent = textworld.agents.WalkthroughAgent()
-        stats = textworld.play(game_file, agent=agent, silent=False)
+        stats = textworld.play(game_file, agent=agent, silent=True)
         assert(stats['score'] == 1)
         
-#test_make_custom_lab_game()
+print("Testing custom lab game generation...")
+test_make_custom_lab_game()
+print("Testing challenge lab game generation...")
 test_make_lab_game_from_level()
+print("Done!")

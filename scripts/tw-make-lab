@@ -46,6 +46,8 @@ def parse_args():
 #                               help="Display the resulting game.")
     general_group.add_argument("-v", "--verbose", action="store_true")
     general_group.add_argument("-f", "--force", action="store_true")
+    general_group.add_argument('--format', choices=["ulx", "z8"], default="ulx",
+                               help="Which format to use when compiling the game. Default: %(default)s")
 
     surface_gen_group = general_parser.add_argument_group('Surface generation settings')
     
@@ -90,6 +92,9 @@ if __name__ == "__main__":
 
     options = textworld.LabGameOptions()
     options.seeds = args.seed
+    options.path = args.output
+    options.file_ext = "." + args.format
+    options.force_recompile = args.force
     options.surface_gen_options.difficulty_mode = args.surface_mode
     options.surface_gen_options.merge_parallel_actions = args.merge_parallel_actions
     options.surface_gen_options.merge_serial_actions = args.merge_serial_actions
@@ -98,8 +103,7 @@ if __name__ == "__main__":
         options.load_lab_config(Path(args.lab_config_path))
         options.sketch_gen_options.max_depth = args.max_quest_length
         options.sketch_gen_options.max_steps = args.max_search_steps
-        options.path = args.output
-        game_file, game = textworld.make_custom_lab(options, )
+        game_file, game = textworld.make_custom_lab(options)
                 
 
     elif args.subcommand == "challenge":
