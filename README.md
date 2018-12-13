@@ -14,7 +14,7 @@ For a detailed system overview, refer to the [paper](https://arxiv.org/abs/1811.
 This repository is essentially a fork of TextWorld ([version 1.0.0
 ](https://github.com/Microsoft/TextWorld/tree/1.0.0/textworld)) with the following main modifications:
 
- - Incorporation of domain specific "lab" entities and logic in the Textworld knowledge base.
+ - Incorporation of domain specific "lab" entities and logic in the TextWorld knowledge base.
   - A `SketchGenerator` for generating materials synthesis "quests" consistent with the domain-specific logic. This is similar in function (and utilizes) the existing `Chainer` helper class.
  - Surface Generator for generating the quest instructions for the generated quests. This replaces the TextWorld `TextGrammar`.
  -  A new "lab challenge" for Textworld.
