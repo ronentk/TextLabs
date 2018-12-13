@@ -1,11 +1,11 @@
 
 # TextLabs
-Adaptation of [TextWorld](https://github.com/Microsoft/TextWorld) text-based reinforcement learning (RL) environment for materials synthesis procedures analysis. This is intended to be a proof-of-concept for "Text2Quest", a new approach to structured information/relation extraction, by which text is interpreted as a game, whose solution by a text-based RL agent is equivalent to the successful extraction of the required information.
+Adaptation of the [TextWorld](https://github.com/Microsoft/TextWorld) text-based reinforcement learning (RL) environment for materials synthesis procedures analysis. This is intended to be a proof-of-concept for "Text2Quest", a new approach to structured information/relation extraction, by which text is interpreted as a game, whose solution by a text-based RL agent is equivalent to the successful extraction of the required information.
 
 More formally, the objective is the extraction of an *action graph* $K$ from an unstructured natural language *surface text* $X$.
 
-An example from the materials science domain:
-XXX
+An example from our materials science domain:
+![](obj_example.png)
 
 We approach this from a reinforcement learning perspective, where an agent will be trained on increasingly harder generated texts simulating materials synthesis procedures (attempting to approach something like $X$ above). Each text is interpreted as instructions for solving a game, and reward is obtained by successfully following them.
 
