@@ -115,7 +115,7 @@ env.close()
 print("avg. steps: {:5.1f}; avg. score: {:4.1f} / 1.".format(sum(avg_moves)/N, sum(avg_scores)/N))
 ```
 
-## Documentation
+## TextWorld Documentation
 For more information about TextWorld, check the [documentation](https://aka.ms/textworld-docs).
 
 ## Citing TextLabs
