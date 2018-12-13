@@ -71,7 +71,7 @@ TextLabs text-based games can be generated via the `tw-make-lab` script. Two mai
 
 ### Generating a game (notebook)
 
-Alternatively, games can be hand-crafted in a Jupyter Notebook environment. For details, see XXX
+Alternatively, games can be hand-crafted in a Jupyter Notebook environment. For details, see [example](notebooks/Demo-play-lab-game.ipynb).
 
 ### Playing a game (terminal)
 
