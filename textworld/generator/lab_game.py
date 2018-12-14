@@ -115,8 +115,12 @@ class LabGameOptions(GameOptions):
         self.chaining = ChainingOptions() # use defaults
         self.surface_gen_options = SurfaceGenerationOptions() \
         if not surface_gen_options else surface_gen_options
-        self.sketch_gen_options = SketchGenerationOptions() \
-        if not sketch_gen_options else sketch_gen_options
+        if not sketch_gen_options:
+            self.sketch_gen_options = SketchGenerationOptions()
+            self._default_sketch_opts = True
+        else:
+            self.sketch_gen_options = sketch_gen_options
+            self._default_sketch_opts = False
         if max_quest_length:
             self.sketch_gen_options.max_depth = max_quest_length
         if seed:
@@ -125,12 +129,26 @@ class LabGameOptions(GameOptions):
 
 
     @property
+    def default_sketch_opts(self) -> bool:
+        return self._default_sketch_opts
+
+    @property
     def max_quest_length(self) -> int:
         return self.sketch_gen_options.max_depth
 
     @max_quest_length.setter
     def max_quest_length(self, value: int) -> None:
         self.sketch_gen_options.max_depth = value
+        self._default_sketch_opts = False
+        
+    @property
+    def max_search_steps(self) -> int:
+        return self.sketch_gen_options.max_steps
+
+    @max_search_steps.setter
+    def max_search_steps(self, value: int) -> None:
+        self.sketch_gen_options.max_steps = value
+        self._default_sketch_opts = False
 
     @property
     def lab_config(self) -> LabConfig:

@@ -79,9 +79,11 @@ def make_game_from_level(level: int, lab_game_options: Optional[LabGameOptions] 
     modes = ["easy", "medium", "hard"]
     mode_idx = modes.index(mode)
     lab_game_options.surface_gen_options.set_difficulty_mode(mode)
-    # Set max search steps according to difficulty
-    lab_game_options.sketch_gen_options.max_steps = ((mode_idx + 1) * 
+    # Set max search steps according to difficulty if not otherwise specified
+    if lab_game_options.default_sketch_opts:
+        lab_game_options.max_steps = ((mode_idx + 1) * 
     MAX_SEARCH_STEPS_PER_MODE)
+        
 
     return make_game(mode, lab_game_options)
 
@@ -109,8 +111,7 @@ def make_game(mode: str, lab_game_options: LabGameOptions
     
     max_quest_length = lab_game_options.sketch_gen_options.max_depth
     surface_gen_options = lab_game_options.surface_gen_options
-    max_search_steps = lab_game_options.sketch_gen_options.max_steps
-    
+    max_search_steps = lab_game_options.max_search_steps
     # Deal with any missing random seeds.
     seeds = get_seeds_for_game_generation(lab_game_options.seeds)
 
@@ -202,7 +203,7 @@ def make_game(mode: str, lab_game_options: LabGameOptions
     
     # Set quest generation options.
     quest_gen_options = SketchGenerationOptions(max_depth=max_quest_length,
-                            max_steps=max_search_steps if max_search_steps else ((mode_idx + 1) * MAX_SEARCH_STEPS_PER_MODE),
+                            max_steps=max_search_steps,
                             win_condition=WinConditionType.ALL,
                             quest_rng=rng_quest,
                             min_uses_per_device=min_uses_per_device,

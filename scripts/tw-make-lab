@@ -48,6 +48,9 @@ def parse_args():
     general_group.add_argument("-f", "--force", action="store_true")
     general_group.add_argument('--format', choices=["ulx", "z8"], default="ulx",
                                help="Which format to use when compiling the game. Default: %(default)s")
+    
+    general_group.add_argument("--max_search_steps", type=int, metavar="STEPS",
+                               help="Maximum number of steps for quest generation search.")
 
     surface_gen_group = general_parser.add_argument_group('Surface generation settings')
     
@@ -70,9 +73,7 @@ def parse_args():
     custom_parser.add_argument("--max_quest_length", type=int, metavar="LENGTH",
                                default=10,
                                help="Maximum number of actions comprising quest.")
-    custom_parser.add_argument("--max_search_steps", type=int, metavar="STEPS",
-                               default=1000,
-                               help="Maximum number of steps for quest generation search.")
+    
     
 
     challenge_parser = subparsers.add_parser("challenge", parents=[general_parser],
@@ -95,6 +96,8 @@ if __name__ == "__main__":
     options.path = args.output
     options.file_ext = "." + args.format
     options.force_recompile = args.force
+    if args.max_search_steps:
+        options.max_search_steps = args.max_search_steps
     options.surface_gen_options.difficulty_mode = args.surface_mode
     options.surface_gen_options.merge_parallel_actions = args.merge_parallel_actions
     options.surface_gen_options.merge_serial_actions = args.merge_serial_actions
@@ -102,7 +105,6 @@ if __name__ == "__main__":
     if args.subcommand == "custom":
         options.load_lab_config(Path(args.lab_config_path))
         options.sketch_gen_options.max_depth = args.max_quest_length
-        options.sketch_gen_options.max_steps = args.max_search_steps
         game_file, game = textworld.make_custom_lab(options)
                 
 
