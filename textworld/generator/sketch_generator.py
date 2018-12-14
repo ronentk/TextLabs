@@ -238,6 +238,7 @@ class LabSketchGenerator(SketchGenerator):
         self.states = {}
         self.q.set_scorer(self.lab_quest_scorer)
         self.set_device_objectives()
+        # validity checks for every search state
         self.node_checks = {
                 'check_max_uses': check_max_uses,
                 'check_mixing_mixture': check_mixing_mixture,
@@ -247,9 +248,13 @@ class LabSketchGenerator(SketchGenerator):
       
     def lab_quest_scorer(self, node: _Node) -> int:
         """ 
-        Simple heuristic score function for search states. 
+        Simple heuristic score function for search states. The higher the score,
+        the lower the search priority.
         """
         score = 10
+        
+        # TODO these should be grouped as "heuristic functions"
+        
         # Reward expanding unseen states
         if self.check_existing_state(node.state) == NEW_STATE:
             score -= 2

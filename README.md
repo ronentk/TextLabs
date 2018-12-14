@@ -62,7 +62,7 @@ TextLabs text-based games can be generated via the `tw-make-lab` script. Two mai
 
     tw-make-lab custom --lab_config_path notebooks/example_lab_config.json --surface_mode medium --merge_parallel_actions --merge_serial_actions --max_quest_length 15 --seed 1234 --output gen_games/game_1234.ulx
 
-`custom` indicates we want to customize the game using the following options: `--max_quest_length` controls the maximum number of actions comprising the minimal winning policy, `--lab_config_path` is the path to a file containing an initial lab configuration (see for example XXX) . Once done, the game will be saved in the `gen_games/` folder.  `--surface_mode` controls the generated text difficulty, `--merge_serial_actions` and `--merge_parallel_actions` are additional flags controlling text generation.
+`custom` indicates we want to customize the game using the following options: `--max_quest_length` controls the maximum number of actions comprising the minimal winning policy, `--lab_config_path` is the path to a file containing an initial lab configuration (see [example](notebooks/example_lab_config.json)) . Once done, the game will be saved in the `gen_games/` folder.  `--surface_mode` controls the generated text difficulty, `--merge_serial_actions` and `--merge_parallel_actions` are additional flags controlling text generation.
 
 #### Challenge
 
@@ -70,7 +70,7 @@ TextLabs text-based games can be generated via the `tw-make-lab` script. Two mai
 
 `challenge` indicates we want to create a random game, where `--challenge` specifies the type of challenge and difficulty level. Under this mode, text generation flags are currently set automatically.
 
-In both modes, `--max_search_steps` sets the number of steps for the search for a valid quest satisfying the constraints. Note that a valid quest may not be found within `max_search_steps`, especially for difficult settings (for example, requiring many device uses). 
+In both modes, `--max_search_steps` sets the number of steps for the search for a valid quest satisfying the constraints. Note that a valid quest may not be found within `max_search_steps`, especially for difficult settings (for example, requiring many device uses).
 
 ### Generating a game (notebook)
 
