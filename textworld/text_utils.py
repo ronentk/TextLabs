@@ -131,12 +131,13 @@ def extract_vocab(games: Iterable[Game]) -> List[str]:
             text += " ".join(game.kb.inform7_variables.values()) + "\n"
             text += " ".join(t for t in game.kb.inform7_variables_description.values() if t) + "\n"
 
-        if game.grammar.options.uuid not in seen:
-            seen.add(game.grammar.options.uuid)
-            # Extract words from text grammar.
-            grammar = Grammar(game.grammar.options)
-            grammar_words = grammar.get_vocabulary()
-            text += " ".join(set(grammar_words)).lower() + "\n"
+#        Remove for TextLabs since not using Grammar
+#        if game.grammar.options.uuid not in seen:
+#            seen.add(game.grammar.options.uuid)
+#            # Extract words from text grammar.
+#            grammar = Grammar(game.grammar.options)
+#            grammar_words = grammar.get_vocabulary()
+#            text += " ".join(set(grammar_words)).lower() + "\n"
 
         # Parse game specific entity names and descriptions.
         text += game.objective + "\n"
