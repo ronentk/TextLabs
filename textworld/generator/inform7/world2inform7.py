@@ -806,14 +806,17 @@ class Inform7Game:
         """)
 
         # Tracing actions.
-#        source += textwrap.dedent("""\
-#            Tracing the actions is an action applying to nothing.
-#            To trace the actions:
-#                (- trace_actions = 1; -).
-#            Carry out tracing the actions:
-#                trace the actions;
-#            Understand "tw-trace-actions" as tracing the actions.
-#        """)
+        source += textwrap.dedent("""\
+            To trace the actions:
+                (- trace_actions = 1; -).
+
+            Tracing the actions is an action applying to nothing.
+            Carry out tracing the actions:
+                trace the actions;
+
+            Understand "tw-trace-actions" as tracing the actions.
+
+        """)
 
         # Special command to restrict possible actions.
         source += textwrap.dedent("""\
