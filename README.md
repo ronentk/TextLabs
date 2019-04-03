@@ -1,6 +1,7 @@
 
+
 # TextLabs
-Adaptation of the [TextWorld](https://github.com/Microsoft/TextWorld) text-based reinforcement learning (RL) environment for materials synthesis procedures analysis. This is intended to become a proof-of-concept for "Text2Quest", a new approach to structured information/relation extraction, by which text is interpreted as a game, whose solution by a text-based RL agent is equivalent to the successful extraction of the required information.
+Adaptation of the [TextWorld](https://github.com/Microsoft/TextWorld) text-based reinforcement learning (RL) environment for [materials synthesis procedures analysis](https://www.synthesisproject.org/). This is intended to become a proof-of-concept for "Text-To-Quest", a new approach to procedural text understanding, by which free natural language instructions or narratives are interpreted as a game, whose solution by a text-based agent is equivalent to the successful extraction of the procedure in the required structured form.
 
 More formally, the objective is the extraction of an *action graph* $K$ from an unstructured natural language *surface text* $X$.
 
@@ -11,16 +12,18 @@ We approach this from a reinforcement learning perspective, where an agent will 
 
 ![](diagram-Github.png)
 
-For a detailed system overview, refer to the [paper](https://arxiv.org/abs/1811.04319).
+For a detailed system overview, refer to our paper, [_Playing by the Book: An Interactive Game Approach for Action Graph Extraction from Text_](https://arxiv.org/abs/1811.04319).
 
 This repository is essentially a fork of TextWorld ([version 1.0.0](https://github.com/Microsoft/TextWorld/tree/1.0.0/tw_textlabs)) with the following main modifications:
 
  - Incorporation of domain specific "lab" entities and logic in the TextWorld knowledge base.
   - A `QuestGenerator` for generating materials synthesis "quests" consistent with the domain-specific logic. This is similar in function (and utilizes) the existing `Chainer` helper class.
- - Surface Generator for generating the quest instructions for the generated quests. This replaces the TextWorld `TextGrammar`.
- -  A new "lab challenge" for Textworld.
+ - Surface Generator for generating the quest instructions for the generated quests. This replaces the TextWorld `Grammar`.
+ -  A new "lab challenge".
 
 Note that the implementations are still preliminary and are under active development!
+
+We call our extension package `tw_textlabs` to avoid confusion with the original `textworld` package.
 
 Following are the Textworld installation and usage instructions, which we follow with minor modifications.
 
@@ -56,13 +59,7 @@ TextWorld's visualization options aren't yet supported for TextLabs.
 
 ### Generating a game (command-line)
 
-TextLabs text-based games can be generated via the `tw-make-lab` script. Two main modes are currently available:
-
-#### Custom
-
-    tw-make-lab custom --lab_config_path notebooks/example_lab_config.json --surface_mode medium --merge_parallel_actions --merge_serial_actions --max_quest_length 15 --seed 1234 --output gen_games/game_1234.ulx
-
-`custom` indicates we want to customize the game using the following options: `--max_quest_length` controls the maximum number of actions comprising the minimal winning policy, `--lab_config_path` is the path to a file containing an initial lab configuration (see [example](notebooks/example_lab_config.json)) . Once done, the game will be saved in the `gen_games/` folder.  `--surface_mode` controls the generated text difficulty, `--merge_serial_actions` and `--merge_parallel_actions` are additional flags controlling text generation.
+TextLabs text-based games can be generated via the `tw-make-lab` script. 
 
 #### Challenge
 
@@ -70,7 +67,7 @@ TextLabs text-based games can be generated via the `tw-make-lab` script. Two mai
 
 `challenge` indicates we want to create a random game, where `--challenge` specifies the type of challenge and difficulty level. Under this mode, text generation flags are currently set automatically.
 
-In both modes, `--max_search_steps` sets the number of steps for the search for a valid quest satisfying the constraints. Note that a valid quest may not be found within `max_search_steps`, especially for difficult settings (for example, requiring many device uses).
+In both modes, `--max_search_steps` sets the number of steps for the search for a valid quest satisfying the constraints. Note that a valid quest may not be found within `max_search_steps`, especially for higher levels.
 
 ### Generating a game (notebook)
 
@@ -110,7 +107,7 @@ for no_episode in range(N):
         if done:
             break
 
-    # See https://tw_textlabs-docs.maluuba.com/tw_textlabs.html#tw_textlabs.core.GameState
+    # See https://textworld-docs.maluuba.com/textworld.html#textworld.core.GameState
     avg_moves.append(game_state.nb_moves)
     avg_scores.append(game_state.score)
 
@@ -118,19 +115,10 @@ env.close()
 print("avg. steps: {:5.1f}; avg. score: {:4.1f} / 1.".format(sum(avg_moves)/N, sum(avg_scores)/N))
 ```
 
-## TextWorld Documentation
-For more information about TextWorld, check the [documentation](https://aka.ms/tw_textlabs-docs).
-
 ## Citing TextLabs
 If you use TextLabs, please cite the following BibTex:
 ```
-@article{Tamari2018PlayingBT,
-title={Playing by the Book: Towards Agent-based Narrative Understanding through Role-playing and Simulation},
-author={Ronen Tamari and Hiroyuki Shindo and Dafna Shahaf and Yuji Matsumoto},
-journal={CoRR},
-year={2018},
-volume={abs/1811.04319}
-}
+XXX
 ```
 
 ## Contributing
@@ -138,7 +126,6 @@ volume={abs/1811.04319}
 This project welcomes contributions and suggestions.
 
 ## Todos
-- [ ] Baseline RL agent
-- [ ] Filling out action/entity vocabularies
+- [ ] Add SynthesisApparatus entities to generated quests
 - [ ] More complex surface texts.
-- [ ] Add `GameInitializer` component
+- [ ] Add component to convert annotated action graphs to TextLabs format.
