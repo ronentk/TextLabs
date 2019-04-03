@@ -1,27 +1,27 @@
-textworld.agents
+tw_textlabs.agents
 ================
 
-.. automodule:: textworld.agents
+.. automodule:: tw_textlabs.agents
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.agents.human
+.. automodule:: tw_textlabs.agents.human
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.agents.random
+.. automodule:: tw_textlabs.agents.random
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.agents.simple
+.. automodule:: tw_textlabs.agents.simple
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.agents.walkthrough
+.. automodule:: tw_textlabs.agents.walkthrough
     :members:
     :undoc-members:
     :show-inheritance:

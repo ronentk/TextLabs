@@ -8,29 +8,29 @@ import unittest
 
 import numpy as np
 
-import textworld
-import textworld.agents
-from textworld.utils import make_temp_directory
+import tw_textlabs
+import tw_textlabs.agents
+from tw_textlabs.utils import make_temp_directory
 
 
 class TestIntegration(unittest.TestCase):
 
     def setUp(self):
-        self.tmpdir = tempfile.mkdtemp(prefix="test_textworld")
-        options = textworld.GameOptions()
+        self.tmpdir = tempfile.mkdtemp(prefix="test_tw_textlabs")
+        options = tw_textlabs.GameOptions()
         options.path = self.tmpdir
         options.nb_rooms = 5
         options.nb_objects = 10
         options.quest_length = 10
         options.seeds = 1234
-        self.game_file, self.game = textworld.make(options)
+        self.game_file, self.game = tw_textlabs.make(options)
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
     def test_100_sequential_runs(self):
         for i in range(1, 100):
-            env = textworld.start(self.game_file)
+            env = tw_textlabs.start(self.game_file)
             env.reset()
             game_state, reward, done = env.step('take inventory')
             self.assertIsNotNone(game_state, "Checking gamestate is not None")
@@ -40,7 +40,7 @@ class TestIntegration(unittest.TestCase):
     def test_simultaneous_runs(self):
         envs = []
         for i in range(1, 100):
-            env = textworld.start(self.game_file)
+            env = tw_textlabs.start(self.game_file)
             env.reset()
             envs.append(env)
 
@@ -50,8 +50,8 @@ class TestIntegration(unittest.TestCase):
         self.assertFalse(done, "Checking we don't finish the game by looking at our stuff")
 
     def test_game_random_agent(self):
-        env = textworld.start(self.game_file)
-        agent = textworld.agents.RandomCommandAgent()
+        env = tw_textlabs.start(self.game_file)
+        agent = tw_textlabs.agents.RandomCommandAgent()
         agent.reset(env)
         game_state = env.reset()
 
@@ -62,8 +62,8 @@ class TestIntegration(unittest.TestCase):
             game_state, reward, done = env.step(command)
 
     def test_game_walkthrough_agent(self):
-        agent = textworld.agents.WalkthroughAgent()
-        env = textworld.start(self.game_file)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        env = tw_textlabs.start(self.game_file)
         env.activate_state_tracking()
         commands = self.game.main_quest.commands
         agent.reset(env)
@@ -92,24 +92,24 @@ def test_playing_generated_games():
         game_seed = rng.randint(0, 65365)
 
         with make_temp_directory(prefix="test_play_generated_games") as tmpdir:
-            options = textworld.GameOptions()
+            options = tw_textlabs.GameOptions()
             options.path = tmpdir
             options.nb_rooms = world_size
             options.nb_objects = nb_objects
             options.quest_length = quest_length
             options.quest_breadth = quest_breadth
             options.seeds = game_seed
-            game_file, game = textworld.make(options)
+            game_file, game = tw_textlabs.make(options)
 
             # Solve the game using WalkthroughAgent.
-            agent = textworld.agents.WalkthroughAgent()
-            textworld.play(game_file, agent=agent, silent=True)
+            agent = tw_textlabs.agents.WalkthroughAgent()
+            tw_textlabs.play(game_file, agent=agent, silent=True)
 
             # Play the game using RandomAgent and make sure we can always finish the
             # game by following the winning policy.
-            env = textworld.start(game_file)
+            env = tw_textlabs.start(game_file)
 
-            agent = textworld.agents.RandomCommandAgent()
+            agent = tw_textlabs.agents.RandomCommandAgent()
             agent.reset(env)
             env.compute_intermediate_reward()
 

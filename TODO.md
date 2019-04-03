@@ -23,4 +23,4 @@
 - Integrate it with `GameMaker` as much as possible.
 
 ## Unit test
-- Make sure we use `GameMaker` in the unit tests rather than using `textworld.generator.world`.
+- Make sure we use `GameMaker` in the unit tests rather than using `tw_textlabs.generator.world`.

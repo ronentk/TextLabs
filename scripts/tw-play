@@ -7,8 +7,8 @@
 import argparse
 import itertools
 
-import textworld
-import textworld.agents
+import tw_textlabs
+import tw_textlabs.agents
 
 
 
@@ -38,20 +38,20 @@ def main():
     if args.very_verbose:
         args.verbose = args.very_verbose
 
-    env = textworld.start(args.game)
+    env = tw_textlabs.start(args.game)
 
     if args.mode == "random":
-        agent = textworld.agents.NaiveAgent()
+        agent = tw_textlabs.agents.NaiveAgent()
     elif args.mode == "random-cmd":
-        agent = textworld.agents.RandomCommandAgent()
+        agent = tw_textlabs.agents.RandomCommandAgent()
     elif args.mode == "human":
-        agent = textworld.agents.HumanAgent(autocompletion=args.hints, walkthrough=args.hints)
+        agent = tw_textlabs.agents.HumanAgent(autocompletion=args.hints, walkthrough=args.hints)
     elif args.mode == 'walkthrough':
-        agent = textworld.agents.WalkthroughAgent()
+        agent = tw_textlabs.agents.WalkthroughAgent()
 
     agent.reset(env)
     if args.viewer is not None:
-        from textworld.envs.wrappers import HtmlViewer
+        from tw_textlabs.envs.wrappers import HtmlViewer
         env = HtmlViewer(env, port=args.viewer)
 
     if args.mode == "human" or args.very_verbose:

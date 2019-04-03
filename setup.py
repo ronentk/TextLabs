@@ -39,8 +39,8 @@ class CustomBuildPy(build_py):
 
 
 setup(
-    name='textworld',
-    version=open(os.path.join("textworld", "version.py")).read().split("=")[-1].strip("' \n"),
+    name='tw_textlabs',
+    version=open(os.path.join("tw_textlabs", "version.py")).read().split("=")[-1].strip("' \n"),
     author='',
     cmdclass={
         'build_py': CustomBuildPy,

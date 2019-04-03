@@ -16,10 +16,10 @@ case "${unameOut}" in
 esac
 
 # Generate parsers
-tatsu textworld/logic/logic.ebnf -o textworld/logic/parser.py -G textworld/logic/model.py
-tatsu textworld/textgen/textgen.ebnf -o textworld/textgen/parser.py -G textworld/textgen/model.py
+tatsu tw_textlabs/logic/logic.ebnf -o tw_textlabs/logic/parser.py -G tw_textlabs/logic/model.py
+tatsu tw_textlabs/textgen/textgen.ebnf -o tw_textlabs/textgen/parser.py -G tw_textlabs/textgen/model.py
 
-cd textworld/thirdparty/
+cd tw_textlabs/thirdparty/
 
 # Install command line Inform 7
 if [ ! -e I7_6M62_Linux_all.tar.gz ]; then

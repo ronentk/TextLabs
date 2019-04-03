@@ -5,8 +5,8 @@ import os
 from os.path import join as pjoin
 from subprocess import check_output
 
-import textworld
-from textworld.utils import make_temp_directory
+import tw_textlabs
+from tw_textlabs.utils import make_temp_directory
 
 SCRIPTS_PATH = os.path.abspath(pjoin(__file__, "..", "..", "scripts"))
 

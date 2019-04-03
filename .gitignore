@@ -15,10 +15,10 @@
 build/*
 gen_games*/
 experiments*/
-/textworld/thirdparty/frotz
-/textworld/thirdparty/inform7-6M62
+/tw_textlabs/thirdparty/frotz
+/tw_textlabs/thirdparty/inform7-6M62
 gameinfo.dbg
-textworld_data/
+tw_textlabs_data/
 Inform/
 I7_6M62_Linux_all.tar.gz
 tmp/*

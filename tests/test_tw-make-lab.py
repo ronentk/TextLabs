@@ -6,10 +6,10 @@ from subprocess import check_call, CalledProcessError
 from os.path import join as pjoin
 from pathlib import Path
 
-import textworld
-import textworld.agents
+import tw_textlabs
+import tw_textlabs.agents
 
-from textworld.utils import make_temp_directory
+from tw_textlabs.utils import make_temp_directory
 
 fpath = Path(__file__).parent.parent / 'notebooks' / 'example_lab_config.json'
 
@@ -30,8 +30,8 @@ def test_make_custom_lab_game():
         assert os.path.isfile(game_file)
         
         # Solve the game using WalkthroughAgent.
-        agent = textworld.agents.WalkthroughAgent()
-        stats = textworld.play(game_file, agent=agent, silent=True)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        stats = tw_textlabs.play(game_file, agent=agent, silent=True)
         assert(stats['score'] == 1)
     
 def test_make_lab_game_from_level():
@@ -53,8 +53,8 @@ def test_make_lab_game_from_level():
         
         # Solve the game using WalkthroughAgent.
         print("Solving game")
-        agent = textworld.agents.WalkthroughAgent()
-        stats = textworld.play(game_file, agent=agent, silent=True)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        stats = tw_textlabs.play(game_file, agent=agent, silent=True)
         assert(stats['score'] == 1)
         
 print("Testing custom lab game generation...")

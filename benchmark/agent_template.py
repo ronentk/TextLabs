@@ -4,10 +4,10 @@
 
 import numpy as np
 
-import textworld
+import tw_textlabs
 
 
-class CustomAgent(textworld.Agent):
+class CustomAgent(tw_textlabs.Agent):
     def __init__(self, seed=1234):
         self.seed = seed
         self.rng = np.random.RandomState(self.seed)

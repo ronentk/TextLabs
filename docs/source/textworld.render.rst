@@ -1,17 +1,17 @@
-textworld.render
+tw_textlabs.render
 ================
 
-.. automodule:: textworld.render
+.. automodule:: tw_textlabs.render
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.render.render
+.. automodule:: tw_textlabs.render.render
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.render.serve
+.. automodule:: tw_textlabs.render.serve
     :members:
     :undoc-members:
     :show-inheritance:

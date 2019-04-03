@@ -11,13 +11,13 @@ from os.path import join as pjoin
 
 import numpy as np
 
-import textworld
-import textworld.challenges
+import tw_textlabs
+import tw_textlabs.challenges
 
 
 def _get_available_challenges():
     challenges = []
-    for challenge in textworld.challenges.CHALLENGES:
+    for challenge in tw_textlabs.challenges.CHALLENGES:
         challenges.append("tw-{}-level{{N}}".format(challenge))
 
     return challenges
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     print("Global seed: {}".format(args.seed))
 
-    options = textworld.LabGameOptions()
+    options = tw_textlabs.LabGameOptions()
     options.seeds = args.seed
     options.path = args.output
     options.file_ext = "." + args.format
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
 
     if args.subcommand == "challenge":
-        from textworld.challenges import CHALLENGES
+        from tw_textlabs.challenges import CHALLENGES
         print(args.challenge)
         _, challenge, level = args.challenge.split("-")
         if challenge not in CHALLENGES:
@@ -113,11 +113,11 @@ if __name__ == "__main__":
         level = int(level.lstrip("level"))
         make_game = CHALLENGES[challenge]
         game = make_game(level, options)
-        game_file = textworld.generator.compile_game(game, options)
+        game_file = tw_textlabs.generator.compile_game(game, options)
 
     print("Game generated: {}".format(game_file))
     if args.verbose:
         print(game.objective)
 
 #    if args.view:
-#        textworld.render.visualize(game, interactive=True)
+#        tw_textlabs.render.visualize(game, interactive=True)

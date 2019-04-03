@@ -8,18 +8,18 @@ include setup.sh
 include glk_build.py
 recursive-include src *
 
-include textworld/logic/*.ebnf
-include textworld/textgen/*.ebnf
-include textworld/generator/data/logic/*.twl
-include textworld/generator/data/text_grammars/*.twg
+include tw_textlabs/logic/*.ebnf
+include tw_textlabs/textgen/*.ebnf
+include tw_textlabs/generator/data/logic/*.twl
+include tw_textlabs/generator/data/text_grammars/*.twg
 
-recursive-include textworld/render/tmpl *
-recursive-include textworld/thirdparty/glulx *
-recursive-include textworld/thirdparty/frotz *
-recursive-include textworld/thirdparty/inform7 *
-recursive-include textworld/thirdparty/inform7-6M62/bin *
-recursive-include textworld/thirdparty/inform7-6M62/share/inform7/Compilers *
-recursive-include textworld/thirdparty/inform7-6M62/share/inform7/Internal *
-recursive-include textworld/thirdparty/inform7-6M62/share/inform7/Interpreters *
+recursive-include tw_textlabs/render/tmpl *
+recursive-include tw_textlabs/thirdparty/glulx *
+recursive-include tw_textlabs/thirdparty/frotz *
+recursive-include tw_textlabs/thirdparty/inform7 *
+recursive-include tw_textlabs/thirdparty/inform7-6M62/bin *
+recursive-include tw_textlabs/thirdparty/inform7-6M62/share/inform7/Compilers *
+recursive-include tw_textlabs/thirdparty/inform7-6M62/share/inform7/Internal *
+recursive-include tw_textlabs/thirdparty/inform7-6M62/share/inform7/Interpreters *
 
 prune build

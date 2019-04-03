@@ -1,17 +1,17 @@
-textworld.challenges
+tw_textlabs.challenges
 ====================
 
-.. automodule:: textworld.challenges
+.. automodule:: tw_textlabs.challenges
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.challenges.coin_collector
+.. automodule:: tw_textlabs.challenges.coin_collector
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.challenges.treasure_hunter
+.. automodule:: tw_textlabs.challenges.treasure_hunter
     :members:
     :undoc-members:
     :show-inheritance:

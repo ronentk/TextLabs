@@ -7,11 +7,11 @@ from os.path import join as pjoin
 
 import numpy as np
 
-import textworld
-from textworld import g_rng
-from textworld.generator import World
+import tw_textlabs
+from tw_textlabs import g_rng
+from tw_textlabs.generator import World
 
-from textworld.generator.game import GameOptions
+from tw_textlabs.generator.game import GameOptions
 
 
 def generate_never_ending_game(args):
@@ -28,29 +28,29 @@ def generate_never_ending_game(args):
     options.quest_length = args.quest_length
     options.quest_breadth = args.quest_breadth
 
-    game = textworld.generator.make_game(options)
+    game = tw_textlabs.generator.make_game(options)
     if args.no_quest:
         game.quests = []
 
     game_name = "neverending"
     path = pjoin(args.output, game_name + ".ulx")
-    options = textworld.GameOptions()
+    options = tw_textlabs.GameOptions()
     options.path = path
     options.force_recompile = True
-    game_file = textworld.generator.compile_game(game, options)
+    game_file = tw_textlabs.generator.compile_game(game, options)
     return game_file
 
 
 def benchmark(game_file, args):
-    env = textworld.start(game_file)
+    env = tw_textlabs.start(game_file)
     print("Using {}".format(env.__class__.__name__))
 
     if args.mode == "random":
-        agent = textworld.agents.NaiveAgent()
+        agent = tw_textlabs.agents.NaiveAgent()
     elif args.mode == "random-cmd":
-        agent = textworld.agents.RandomCommandAgent(seed=args.agent_seed)
+        agent = tw_textlabs.agents.RandomCommandAgent(seed=args.agent_seed)
     elif args.mode == "walkthrough":
-        agent = textworld.agents.WalkthroughAgent()
+        agent = tw_textlabs.agents.WalkthroughAgent()
 
     agent.reset(env)
 

@@ -6,11 +6,11 @@ import numpy as np
 from pathlib import Path
 import tqdm
 from itertools import repeat
-import textworld
-import textworld.agents
-from textworld.challenges.lab_game import make_game_from_level
-from textworld.generator.lab_game import LabGameOptions
-from textworld.utils import make_temp_directory
+import tw_textlabs
+import tw_textlabs.agents
+from tw_textlabs.challenges.lab_game import make_game_from_level
+from tw_textlabs.generator.lab_game import LabGameOptions
+from tw_textlabs.utils import make_temp_directory
 import pandas as pd
 
 
@@ -32,10 +32,10 @@ def make_and_play_game(level, lab_game_options):
             output_folder = Path(tmpdir) / "gen_games"
             game_file = output_folder / ("%s.ulx" % (game.metadata["uuid"]))
             lab_game_options.path = game_file
-            game_file = textworld.generator.compile_game(game, lab_game_options)
+            game_file = tw_textlabs.generator.compile_game(game, lab_game_options)
             # Solve the game using WalkthroughAgent.
-            agent = textworld.agents.WalkthroughAgent()
-            stats = textworld.play(game_file, agent=agent, silent=True)
+            agent = tw_textlabs.agents.WalkthroughAgent()
+            stats = tw_textlabs.play(game_file, agent=agent, silent=True)
             game.metadata.update({'quest_desc': game.main_quest.desc})
             game.metadata.update(stats)
     return game

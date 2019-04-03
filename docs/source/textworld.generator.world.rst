@@ -1,12 +1,12 @@
 World
 =====
 
-.. automodule:: textworld.generator.world
+.. automodule:: tw_textlabs.generator.world
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.generator.graph_networks
+.. automodule:: tw_textlabs.generator.graph_networks
     :members:
     :undoc-members:
     :show-inheritance:

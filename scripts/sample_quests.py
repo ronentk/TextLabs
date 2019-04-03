@@ -11,14 +11,14 @@ from os.path import join as pjoin
 import numpy as np
 import networkx as nx
 
-import textworld
+import tw_textlabs
 
-from textworld.render import visualize
-from textworld.generator import Game
-from textworld.generator.inform7 import Inform7Game
-from textworld.generator.chaining import ChainingOptions
-from textworld.generator.chaining import sample_quest
-from textworld.utils import save_graph_to_svg
+from tw_textlabs.render import visualize
+from tw_textlabs.generator import Game
+from tw_textlabs.generator.inform7 import Inform7Game
+from tw_textlabs.generator.chaining import ChainingOptions
+from tw_textlabs.generator.chaining import sample_quest
+from tw_textlabs.utils import save_graph_to_svg
 
 
 def parse_args():

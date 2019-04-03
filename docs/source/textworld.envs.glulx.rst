@@ -1,12 +1,12 @@
 Glulx
 =====
 
-.. automodule:: textworld.envs.glulx
+.. automodule:: tw_textlabs.envs.glulx
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.glulx.git_glulx_ml
+.. automodule:: tw_textlabs.envs.glulx.git_glulx_ml
     :members:
     :undoc-members:
     :show-inheritance:

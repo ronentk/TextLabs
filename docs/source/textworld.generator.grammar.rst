@@ -1,12 +1,12 @@
 Grammar
 =======
 
-.. automodule:: textworld.generator.text_generation
+.. automodule:: tw_textlabs.generator.text_generation
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.generator.text_grammar
+.. automodule:: tw_textlabs.generator.text_grammar
     :members:
     :undoc-members:
     :show-inheritance:

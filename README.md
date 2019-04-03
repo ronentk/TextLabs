@@ -13,7 +13,7 @@ We approach this from a reinforcement learning perspective, where an agent will 
 
 For a detailed system overview, refer to the [paper](https://arxiv.org/abs/1811.04319).
 
-This repository is essentially a fork of TextWorld ([version 1.0.0](https://github.com/Microsoft/TextWorld/tree/1.0.0/textworld)) with the following main modifications:
+This repository is essentially a fork of TextWorld ([version 1.0.0](https://github.com/Microsoft/TextWorld/tree/1.0.0/tw_textlabs)) with the following main modifications:
 
  - Incorporation of domain specific "lab" entities and logic in the TextWorld knowledge base.
   - A `QuestGenerator` for generating materials synthesis "quests" consistent with the domain-specific logic. This is similar in function (and utilizes) the existing `Chainer` helper class.
@@ -89,10 +89,10 @@ To play a game, one can use the `tw-play` script. For instance, the command to p
 Here's how you can interact with a text-based game from within Python.
 
 ```python
-import textworld
+import tw_textlabs
 
-env = textworld.start("gen_games/game_1234.ulx")  # Start an existing game.
-agent = textworld.agents.NaiveAgent()  # Or your own `textworld.Agent` subclass.
+env = tw_textlabs.start("gen_games/game_1234.ulx")  # Start an existing game.
+agent = tw_textlabs.agents.NaiveAgent()  # Or your own `tw_textlabs.Agent` subclass.
 
 # Collect some statistics: nb_steps, final reward.
 avg_moves, avg_scores = [], []
@@ -110,7 +110,7 @@ for no_episode in range(N):
         if done:
             break
 
-    # See https://textworld-docs.maluuba.com/textworld.html#textworld.core.GameState
+    # See https://tw_textlabs-docs.maluuba.com/tw_textlabs.html#tw_textlabs.core.GameState
     avg_moves.append(game_state.nb_moves)
     avg_scores.append(game_state.score)
 
@@ -119,7 +119,7 @@ print("avg. steps: {:5.1f}; avg. score: {:4.1f} / 1.".format(sum(avg_moves)/N, s
 ```
 
 ## TextWorld Documentation
-For more information about TextWorld, check the [documentation](https://aka.ms/textworld-docs).
+For more information about TextWorld, check the [documentation](https://aka.ms/tw_textlabs-docs).
 
 ## Citing TextLabs
 If you use TextLabs, please cite the following BibTex:

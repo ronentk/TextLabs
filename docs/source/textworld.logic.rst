@@ -1,17 +1,17 @@
-textworld.logic
+tw_textlabs.logic
 ===============
 
-.. automodule:: textworld.logic
+.. automodule:: tw_textlabs.logic
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.logic.model
+.. automodule:: tw_textlabs.logic.model
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.logic.parser
+.. automodule:: tw_textlabs.logic.parser
     :members:
     :undoc-members:
     :show-inheritance:

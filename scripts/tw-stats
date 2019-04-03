@@ -7,8 +7,8 @@
 import sys
 import argparse
 
-from textworld.generator import Game
-from textworld.generator.logger import GameLogger
+from tw_textlabs.generator import Game
+from tw_textlabs.generator.logger import GameLogger
 
 
 if __name__ == "__main__":

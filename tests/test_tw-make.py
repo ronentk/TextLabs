@@ -6,10 +6,10 @@ import glob
 from subprocess import check_call
 from os.path import join as pjoin
 
-import textworld
-import textworld.agents
-import textworld.challenges
-from textworld.utils import make_temp_directory
+import tw_textlabs
+import tw_textlabs.agents
+import tw_textlabs.challenges
+from tw_textlabs.utils import make_temp_directory
 
 
 def test_making_a_custom_game():
@@ -23,8 +23,8 @@ def test_making_a_custom_game():
         assert os.path.isfile(game_file)
 
         # Solve the game using WalkthroughAgent.
-        agent = textworld.agents.WalkthroughAgent()
-        textworld.play(game_file, agent=agent, silent=True)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        tw_textlabs.play(game_file, agent=agent, silent=True)
 
     with make_temp_directory(prefix="test_tw-make") as tmpdir:
         output_folder = pjoin(tmpdir, "gen_games")
@@ -36,8 +36,8 @@ def test_making_a_custom_game():
         assert os.path.isfile(game_file + ".ulx")
 
         # Solve the game using WalkthroughAgent.
-        agent = textworld.agents.WalkthroughAgent()
-        textworld.play(game_file + ".ulx", agent=agent, silent=True)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        tw_textlabs.play(game_file + ".ulx", agent=agent, silent=True)
 
     with make_temp_directory(prefix="test_tw-make") as tmpdir:
         output_folder = pjoin(tmpdir, "gen_games", "")
@@ -48,8 +48,8 @@ def test_making_a_custom_game():
         game_file = glob.glob(pjoin(output_folder, "*.ulx"))[0]
 
         # Solve the game using WalkthroughAgent.
-        agent = textworld.agents.WalkthroughAgent()
-        textworld.play(game_file, agent=agent, silent=True)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        tw_textlabs.play(game_file, agent=agent, silent=True)
 
     with make_temp_directory(prefix="test_tw-make") as tmpdir:
         output_folder = pjoin(tmpdir, "gen_games")
@@ -59,12 +59,12 @@ def test_making_a_custom_game():
         assert os.path.isfile(output_folder + ".ulx")
 
         # Solve the game using WalkthroughAgent.
-        agent = textworld.agents.WalkthroughAgent()
-        textworld.play(output_folder + ".ulx", agent=agent, silent=True)
+        agent = tw_textlabs.agents.WalkthroughAgent()
+        tw_textlabs.play(output_folder + ".ulx", agent=agent, silent=True)
 
 def test_making_challenge_game():
     with make_temp_directory(prefix="test_tw-challenge") as tmpdir:
-        for challenge in textworld.challenges.CHALLENGES:
+        for challenge in tw_textlabs.challenges.CHALLENGES:
             env_id = "tw-{}-level1".format(challenge)
             output_folder = pjoin(tmpdir, "gen_games")
             game_file = pjoin(output_folder, env_id + ".ulx")
@@ -75,5 +75,5 @@ def test_making_challenge_game():
             assert os.path.isfile(game_file)
 
             # Solve the game using WalkthroughAgent.
-            agent = textworld.agents.WalkthroughAgent()
-            textworld.play(game_file, agent=agent, silent=True)
+            agent = tw_textlabs.agents.WalkthroughAgent()
+            tw_textlabs.play(game_file, agent=agent, silent=True)

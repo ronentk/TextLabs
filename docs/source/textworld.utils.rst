@@ -1,7 +1,7 @@
-textworld.utils
+tw_textlabs.utils
 ================
 
-.. automodule:: textworld.utils
+.. automodule:: tw_textlabs.utils
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,22 +1,22 @@
 Z-Machine
 =========
 
-.. automodule:: textworld.envs.zmachine
+.. automodule:: tw_textlabs.envs.zmachine
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.zmachine.frotz
+.. automodule:: tw_textlabs.envs.zmachine.frotz
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.zmachine.jericho
+.. automodule:: tw_textlabs.envs.zmachine.jericho
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.zmachine.zork1
+.. automodule:: tw_textlabs.envs.zmachine.zork1
     :members:
     :undoc-members:
     :show-inheritance:

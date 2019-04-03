@@ -8,9 +8,9 @@ import sys
 import pprint
 import argparse
 
-import textworld
-from textworld.text_utils import extract_vocab
-from textworld.generator import Game
+import tw_textlabs
+from tw_textlabs.text_utils import extract_vocab
+from tw_textlabs.generator import Game
 
 
 def parse_args():

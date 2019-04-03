@@ -11,7 +11,7 @@ Creates grammar files in the target directory.
 import argparse
 from os.path import join as pjoin
 
-from textworld.generator.data import create_data_files
+from tw_textlabs.generator.data import create_data_files
 
 
 def parse_args():
@@ -24,6 +24,6 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    path = pjoin(args.destination, "textworld_data")
+    path = pjoin(args.destination, "tw_textlabs_data")
     print("Placing Textworld's customizable files in '{}'.".format(path))
     create_data_files(path, verbose=args.verbose, force=args.force)

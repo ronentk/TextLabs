@@ -6,8 +6,8 @@
 
 import argparse
 
-import textworld
-import textworld.agents
+import tw_textlabs
+import tw_textlabs.agents
 
 
 def parse_args():
@@ -19,11 +19,11 @@ def parse_args():
 
 def main():
     args = parse_args()
-    agent = textworld.agents.WalkthroughAgent()
+    agent = tw_textlabs.agents.WalkthroughAgent()
 
     for i, game in enumerate(args.games, start=1):
         print("{}. Testing {} ...".format(i, game))
-        env = textworld.start(game)
+        env = tw_textlabs.start(game)
         env.activate_state_tracking()
         agent.reset(env)
         game_state = env.reset()

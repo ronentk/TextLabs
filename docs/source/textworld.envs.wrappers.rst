@@ -1,22 +1,22 @@
 Wrappers
 ========
 
-.. automodule:: textworld.envs.wrappers
+.. automodule:: tw_textlabs.envs.wrappers
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.wrappers.recorder
+.. automodule:: tw_textlabs.envs.wrappers.recorder
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.wrappers.viewer
+.. automodule:: tw_textlabs.envs.wrappers.viewer
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: textworld.envs.wrappers.filter
+.. automodule:: tw_textlabs.envs.wrappers.filter
     :members:
     :undoc-members:
     :show-inheritance:

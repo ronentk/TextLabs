@@ -13,14 +13,14 @@ import platform
 
 from tqdm import tqdm
 
-import textworld
+import tw_textlabs
 
 
 log = logging.getLogger("tw-benchmark")
 
 
 def evaluate(agent, game, args):
-    env = textworld.start(game)
+    env = tw_textlabs.start(game)
     log.debug("Using {}".format(env.__class__.__name__))
     agent.reset(env)
 
@@ -175,7 +175,7 @@ def main():
 
     # Dynamically load agent class.
     path, klass = args.agent.split(":")
-    spec = importlib.util.spec_from_file_location("textworld.benchmark.agents", path)
+    spec = importlib.util.spec_from_file_location("tw_textlabs.benchmark.agents", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     if not hasattr(mod, klass):

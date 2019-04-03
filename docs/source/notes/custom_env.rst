@@ -3,7 +3,7 @@ Custom Environment
 
 Making new Environments is useful when games output more information than needed (e.g. a header). It is also useful for detecting when a game ends (either win or lose) since most games have different ways of letting the player knows the game has ended.
 
-This page will guide you through creating a new environment. You should have prior knowledge of the :py:class:`textworld.core.Environment` and :py:class:`textworld.core.GameState` classes.
+This page will guide you through creating a new environment. You should have prior knowledge of the :py:class:`tw_textlabs.core.Environment` and :py:class:`tw_textlabs.core.GameState` classes.
 
 Zork1Environment
 ----------------
@@ -25,7 +25,7 @@ All this decorative text is just noise really. One could argue that header conta
 .. |zork1| image:: ./images/zork1_frotz.png
     :alt: Frotz version
 
-.. |zork1_tw| image:: ./images/zork1_textworld.png
+.. |zork1_tw| image:: ./images/zork1_tw_textlabs.png
     :alt: TextWorld version
 
 +-----------+------------+
@@ -39,11 +39,11 @@ As we can see in the right column of the above table, the input text is more com
 
 Building the Zork1Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Since `zork1.z5` is a Z-Machine game, we want to leverage the *python-frotz* communication pipeline already in place in :py:class:`textworld.envs.FrotzEnvironment <textworld.envs.zmachine.frotz.FrotzEnvironment>`. To do so, we simply have to subclass it.
+Since `zork1.z5` is a Z-Machine game, we want to leverage the *python-frotz* communication pipeline already in place in :py:class:`tw_textlabs.envs.FrotzEnvironment <tw_textlabs.envs.zmachine.frotz.FrotzEnvironment>`. To do so, we simply have to subclass it.
 
 ::
 
-    from textworld.envs import FrotzEnvironment
+    from tw_textlabs.envs import FrotzEnvironment
 
     class Zork1Environment(FrotzEnvironment):
         GAME_STATE_CLASS = Zork1GameState
@@ -51,13 +51,13 @@ Since `zork1.z5` is a Z-Machine game, we want to leverage the *python-frotz* com
 
 As we can see there is nothing much to modify for this particular environment other than specifying the game state class to use. This is because we only need to clean the output text rather than changing some fundamental behavior of the `FrotzEnvironment`.
 
-Cleaning up the output is essentially done in the :py:class:`Zork1GameState <textworld.envs.zmachine.zork1.Zork1GameState>` (a subclass of :py:class:`GameState <textworld.core.GameState>`) using a bunch of regular expressions. Here's what it looks like
+Cleaning up the output is essentially done in the :py:class:`Zork1GameState <tw_textlabs.envs.zmachine.zork1.Zork1GameState>` (a subclass of :py:class:`GameState <tw_textlabs.core.GameState>`) using a bunch of regular expressions. Here's what it looks like
 
 ::
 
-    import textworld
+    import tw_textlabs
 
-    class Zork1GameState(textworld.GameState):
+    class Zork1GameState(tw_textlabs.GameState):
 
         def _remove_header(self, text):
             cleaned_text = text_utils.remove_header(text)
@@ -151,12 +151,12 @@ Cleaning up the output is essentially done in the :py:class:`Zork1GameState <tex
             return self.nb_deaths >= 3
 
 
-Then the last thing to do is to make TextWorld framework aware of that new environment. This is done by adding a new entry to the `CUSTOM_ENVIRONMENTS` dictionary located in `textworld/envs/__init__.py`.
+Then the last thing to do is to make TextWorld framework aware of that new environment. This is done by adding a new entry to the `CUSTOM_ENVIRONMENTS` dictionary located in `tw_textlabs/envs/__init__.py`.
 
 ::
 
     # Import dedicated environment
-    from textworld.envs.frotz.zork1 import Zork1Environment
+    from tw_textlabs.envs.frotz.zork1 import Zork1Environment
 
     CUSTOM_ENVIRONMENTS = {
         "zork1.z5": Zork1Environment

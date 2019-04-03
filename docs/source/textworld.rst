@@ -1,7 +1,7 @@
-textworld
+tw_textlabs
 =========
 
-.. automodule:: textworld
+.. automodule:: tw_textlabs
     :members:
     :undoc-members:
     :show-inheritance:
@@ -10,7 +10,7 @@ textworld
 Core
 ----
 
-.. automodule:: textworld.core
+.. automodule:: tw_textlabs.core
     :members:
     :undoc-members:
     :show-inheritance:

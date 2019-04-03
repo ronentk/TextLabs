@@ -10,13 +10,13 @@ from os.path import join as pjoin
 
 import numpy as np
 
-import textworld
-import textworld.challenges
+import tw_textlabs
+import tw_textlabs.challenges
 
 
 def _get_available_challenges():
     challenges = []
-    for challenge in textworld.challenges.CHALLENGES:
+    for challenge in tw_textlabs.challenges.CHALLENGES:
         challenges.append("tw-{}-level{{N}}".format(challenge))
 
     return challenges
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     if not args.silent:
         print("Global seed: {}".format(args.seed))
 
-    options = textworld.GameOptions()
+    options = tw_textlabs.GameOptions()
     options.seeds = args.seed
     options.path = args.output
     options.file_ext = "." + args.format
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         options.nb_objects = args.nb_objects
         options.quest_length = args.quest_length
         options.quest_breadth = args.quest_breadth
-        game_file, game = textworld.make(options)
+        game_file, game = tw_textlabs.make(options)
 
     elif args.subcommand == "challenge":
         try:
@@ -120,13 +120,13 @@ if __name__ == "__main__":
         except ValueError:
             exit_listing_challenges()
 
-        if challenge not in textworld.challenges.CHALLENGES:
+        if challenge not in tw_textlabs.challenges.CHALLENGES:
             exit_listing_challenges(args.challenge)
 
         level = int(level.lstrip("level"))
-        make_game = textworld.challenges.CHALLENGES[challenge]
+        make_game = tw_textlabs.challenges.CHALLENGES[challenge]
         game = make_game(level, options)
-        game_file = textworld.generator.compile_game(game, options)
+        game_file = tw_textlabs.generator.compile_game(game, options)
 
     if not args.silent:
         print("Game generated: {}".format(game_file))
@@ -135,4 +135,4 @@ if __name__ == "__main__":
         print(game.objective)
 
     if args.view:
-        textworld.render.visualize(game, interactive=True)
+        tw_textlabs.render.visualize(game, interactive=True)
