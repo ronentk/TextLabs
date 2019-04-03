@@ -8,7 +8,7 @@ More formally, the objective is the extraction of an *action graph* $K$ from an 
 An example from our materials science domain:
 ![](obj_example.png)
 
-We approach this from a reinforcement learning perspective, where an agent will be trained on increasingly harder generated texts simulating materials synthesis procedures (attempting to approach something like $X$ above). Each text is interpreted as instructions for solving a game (generated alongside the text), and reward is obtained by successfully following the instructions in the game context. The winning policy (sequence of actions) carried out by the agent for a specific instruction set is exactly the desired action graph $K$.
+We approach this from a game solving perspective, where an agent will be trained on increasingly harder generated texts simulating materials synthesis procedures (hopefully eventually approaching something like $X$ above). Each text is interpreted as instructions for solving a game (generated along with the text), and reward is obtained by successfully following the instructions in the game context. The winning policy (sequence of actions) carried out by the agent for a specific instruction set is exactly the desired action graph $K$.
 
 ![](diagram-Github.png)
 
