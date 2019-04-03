@@ -16,21 +16,22 @@ def test_game_walkthrough_agent(game_file):
         env.enable_extra_info("score")
         agent.reset(env)
         stats = textworld.play(game_file, agent=agent, silent=True)
+        print(stats)
         assert(stats['score'] == 1)
-
 
 if __name__ == "__main__":
     
-    test_seed = 3241443
-    level = 12
+    test_seed = 7118500
+    level = 21
     lab_game_options = LabGameOptions()
     lab_game_options.seeds = test_seed
+    lab_game_options.max_quest_length = 100
     lab_game_options.force_recompile = True
     game = make_game_from_level(level, lab_game_options)
     
     quest = game.quests[0]
     pg = ProcessGraph()
-    pg.from_tw_quest(quest)
+    pg.from_tw_actions(quest.actions)
     pg.draw()
     
     with make_temp_directory(prefix="test_tw-make") as tmpdir:
