@@ -1,0 +1,51 @@
+# descriptor
+type dsc : o {
+    predicates {
+    
+
+    }
+
+    rules {
+
+
+
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "descriptor-like";
+            definition :: " descriptor-like is portable.";
+        }
+
+        predicates {
+        
+
+
+        }
+
+        commands {
+
+        }
+
+
+        code ::
+        """
+    Dlinking it to is an action applying to two things.
+    Understand "Dlink [descriptor-like] to [entity]" as dlinking it to.
+
+    Carry out dlinking:
+    	let the DH be a random descs_holder which is part of the second noun;
+    	now the noun is in the DH.
+
+    Report dlinking:
+  	  say "Linked description to entity!"
+        """;
+
+    }
+}

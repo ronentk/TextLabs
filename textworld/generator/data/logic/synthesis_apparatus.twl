@@ -1,8 +1,7 @@
 # synthesis_apparatus
-type sa : t{
+type sa : loc {
     predicates {
 
-		result_mod(m, sa);
 
     }
 
@@ -12,7 +11,7 @@ type sa : t{
         }
 
         predicates {
-			result_mod(m, sa) :: "The {sa} has processed the {m}";
+
         }
     }
 }

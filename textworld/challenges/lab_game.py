@@ -14,7 +14,7 @@ from textworld.challenges.utils import get_seeds_for_game_generation
 
 from textworld.utils import encode_seeds
 from textworld.generator.lab_game import LabGameOptions
-from textworld.generator.sketch_generator import SketchGenerationOptions, WinConditionType, init_usage_map
+from textworld.generator.quest_generator import QuestGenerationOptions, WinConditionType, init_usage_map
 from textworld.generator.process_graph import MATERIAL_STATES
 
 from textworld.utils import quest_gen_logger

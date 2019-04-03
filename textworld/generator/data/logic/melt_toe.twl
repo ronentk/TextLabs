@@ -1,0 +1,16 @@
+# melting_enum
+type melttoe : toe {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "melting_enum";
+        }
+
+        commands {
+
+        }
+    }
+}

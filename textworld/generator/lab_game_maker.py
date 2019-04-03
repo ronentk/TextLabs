@@ -1,14 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-
-
 from typing import Iterable, Union, Optional
 try:
     from typing import Collection
 except ImportError:
     # Collection is new in Python 3.6 -- fall back on Iterable for 3.5
     from typing import Iterable as Collection
+
+import networkx as nx
 
 import textworld
 
@@ -18,91 +18,12 @@ from textworld.generator.game import Game, World, Quest, UnderspecifiedQuestErro
 from textworld.generator.surface_generator import SurfaceGenerator, descriptions
 from textworld.generator.chaining import Chain
 from textworld.generator.maker import GameMaker, WorldEntity
-from textworld.generator.sketch_generator import LabSketchGenerator, convert_to_compact_action, SketchGenerationOptions, WinConditionType
+from textworld.generator.quest_generator import LabQuestGenerator, convert_to_compact_action, QuestGenerationOptions, WinConditionType
 from textworld.utils import quest_gen_logger
-from textworld.generator.process_graph import MATERIAL_STATES
+from textworld.generator.lab_game import LabGameOptions
+from textworld.generator.process_graph import MATERIAL_STATES, ProcessGraph
 
-
-def get_material_state_facts(state: State, material_type: str = 'm', 
-                             mat_states: Union[str] = MATERIAL_STATES
-                             ) -> Collection[Proposition]:
-    """
-    Get all facts from current game state describing material states.
-    """
-    mat_state_facts = set()
-    for mat_state in mat_states:
-        mat_state_facts.update(state.facts_with_signature(Signature(mat_state,[material_type])))
-    return mat_state_facts
-
-def get_result_facts(state: State, 
-                     result_types: Union[str] = {'result_mod', 'result_new'}
-                     ) -> Collection[Proposition]:
-    """
-    Get all facts from current game state describing result propositions.
-    These are used to record events of production or modification of materials.
-    """
-    result_facts = set()
-    for fact in state.facts:
-        if fact.name in result_types:
-            result_facts.update(set([fact]))
-    return result_facts
     
-
-def get_win_conditions(chain: Chain, 
-                       win_condition_type: WinConditionType = WinConditionType.ALL
-                       ) -> Collection[Proposition]:
-    """
-    Given a chain of actions comprising a quest, return the set of propositions
-    which must hold in a winning state.
-    
-    Parameters
-    ----------
-    win_condition_type:
-        Type of win condition used to determine the relevant propositions.
-        
-    Returns
-    -------
-    win_conditions:
-        Set of propositions which must hold as post-conditions of the last 
-        action of the quest.
-    """
-    win_conditions = set()
-    if win_condition_type in [WinConditionType.MAT_STATES,
-                         WinConditionType.POST_AND_STATES,
-                         WinConditionType.ALL]:
-        # disregard final state of mixture to remain agnostic to mixing order.
-        # See #12. Note that if mixture state is post condition of last action
-        # and these are part of winning condition, it will be included.
-        base_material_states = get_material_state_facts(chain.final_state, material_type='m').difference(get_material_state_facts(chain.final_state, material_type='mx'))
-        
-        # Include mixture compositions as winning condition
-        win_conditions.update(
-        base_material_states.union(
-                chain.final_state.facts_with_signature(Signature('component', ['m', 'mx']))))
-    if win_condition_type in [WinConditionType.LAST_ACTION_POST,
-                         WinConditionType.POST_AND_STATES,
-                         WinConditionType.ALL]:
-        if len(chain.actions) == 0:
-            raise UnderspecifiedQuestError()
-
-        # Disregard state of mixture if postcondition of mixing action
-        # since we don't want mixing order to affect the winning condition
-        post_props = set(chain.actions[-1].postconditions)
-        if 'mix' in chain.actions[-1].name:
-            mixture_state_props = {prop for prop in post_props if prop.name in MATERIAL_STATES and prop.arguments[0].type == 'mx'}
-            post_props.difference_update(mixture_state_props)
-        
-        # The default winning conditions are the postconditions of the
-        # last action in the quest.
-        win_conditions.update(post_props)
-        
-    if win_condition_type in [WinConditionType.ALL, WinConditionType.RESULTS]:
-        result_facts = get_result_facts(chain.final_state)
-        win_conditions.update(result_facts)
-        
-    
-   
-    return Event(conditions=win_conditions)
 
 class LabGameMaker(GameMaker):
     """ 
@@ -120,7 +41,7 @@ class LabGameMaker(GameMaker):
         Creates an empty world, with a player and an empty inventory.
         """
         self._entities = {}
-        self._quests = []
+        self.quests = []
         self.rooms = []
         self.paths = []
         self._types_counts = KnowledgeBase.default().types.count(State())
@@ -130,6 +51,12 @@ class LabGameMaker(GameMaker):
         self._game = None
         self._quests_str = []
         self._distractors_facts = []
+        # define global op types
+        self.globals = {}
+        for t in KnowledgeBase.default().types.descendants('toe'):
+            op_type = self.new(type=t)
+            op_type.add_property('initialized')
+            self.globals[t] = op_type
 
 
     def get_world(self) -> World:
@@ -161,7 +88,7 @@ class LabGameMaker(GameMaker):
             self.validate()  # Validate the state of the world.
 
         world = World.from_facts(self.facts)
-        game = Game(world, quests=self._quests)
+        game = Game(world, quests=self.quests)
 
         # Keep names and descriptions that were manually provided.
         for k, var_infos in game.infos.items():
@@ -197,7 +124,10 @@ class LabGameMaker(GameMaker):
             Path to the game file.
         """
         self._working_game = self.build()
-        game_file = textworld.generator.compile_game(self._working_game, path, force_recompile=True)
+        options = textworld.GameOptions()
+        options.path = path
+        options.force_recompile = True
+        game_file = textworld.generator.compile_game(self._working_game, options)
         return game_file
 
     def __contains__(self, entity) -> bool:
@@ -220,7 +150,7 @@ class LabGameMaker(GameMaker):
         return False
 
     
-    def generate_quest_surface_pair(self, quest_gen_options: SketchGenerationOptions) -> Quest:
+    def generate_quest_surface_pair(self, quest_gen_options: QuestGenerationOptions) -> Quest:
         """
         Generate a materials synthesis quest and corresponding surface using the
         the supplied generation options.
@@ -241,7 +171,7 @@ class LabGameMaker(GameMaker):
         self.set_quest_description(surface)
         return quest
     
-    def generate_quest(self, quest_gen_options: SketchGenerationOptions) -> Quest:
+    def generate_quest(self, quest_gen_options: QuestGenerationOptions) -> Quest:
         """
         Generate a materials synthesis quest using the
         the supplied generation options.
@@ -258,44 +188,17 @@ class LabGameMaker(GameMaker):
             
         """
         world = self.get_world()
-        quest_gen = LabSketchGenerator(start_state=world.state,
+        quest_gen = LabQuestGenerator(start_state=world.state,
                                       quest_gen_options=quest_gen_options)
-        quest_gen.set_device_objectives()
-        chain = quest_gen.generate_quest()
-        quest_gen_logger.info("Found quest: %s" % (str([convert_to_compact_action(a) for a in chain.actions])))
-        win_event = get_win_conditions(chain,
-                                    quest_gen_options.win_condition)
-        win_event.actions = chain.actions
-        quest = Quest(win_events=[win_event], commands=self.i7_commands_from_actions(chain.actions),
-                      actions=chain.actions)
-        self._quests = [quest]
-#        self._quests_str = [[convert_to_compact_action(a) for a in chain.actions]]
+        quest = quest_gen.generate_quest()
+        quest_gen_logger.info("Found quest: %s" % (str([convert_to_compact_action(a) for a in quest.actions])))
+        self.quests = [quest]
         return quest
 
     def set_quest_description(self, surface: str) -> None:
         """ Set quest description with given Surface text"""
-        if len(self._quests) > 0:
-            self._quests[0].desc = surface
-
-    def action_to_i7_command(self, action: Action) -> str:
-        """ Convert an action to the corresponding command in Inform7"""
-        action_vars = convert_to_compact_action(action)
-        i7command_template = KnowledgeBase.default().inform7_commands[action.name]
-        new_cmd = []
-        ents = [self._entities[v.name] for v in action_vars.vars]
-        ents.reverse()
-        for w in i7command_template.split(' '):
-            if (('{' in w) and ('}' in w)):
-                new_cmd.append(ents.pop().name)
-            else:
-                new_cmd.append(w)
-        assert(len(ents) == 0)
-        return ' '.join(new_cmd)
-        
-        
-    def i7_commands_from_actions(self, actions: Iterable[Action]) -> Iterable[str]:
-        """Get list of all Inform7 commands corresponding to list of actions. """
-        return [self.action_to_i7_command(a) for a in actions]
+        if len(self.quests) > 0:
+            self.quests[0].desc = surface
     
     def new_lab_entity(self, entity_type: str, name: Optional[str] = None,
             desc: Optional[str] = None) -> WorldEntity:
@@ -319,30 +222,46 @@ class LabGameMaker(GameMaker):
         lab_entity = self.new(type=entity_type, name=name, desc=desc)
         return lab_entity
     
-    def new_lab_container(self, name: Optional[str] = None,
+    def new_tlq_op(self, name: Optional[str] = None,
             desc: Optional[str] = None, absolute_name: Optional[str] = None, 
-            num_uses: Optional[int] = 1) -> WorldEntity:
+            op_type: Optional[str] = None, dynamic_define: Optional[bool] = False) -> WorldEntity:
         """ 
-        Create new lab_container entity.
+        Create new TextLabs operation entity.
 
         Args:
             name: The name of the entity.
             desc: The description of the entity.
-            num_uses: Maximum number of separate mixtures that can be created
-            using this lab_container. Currently only one use per lab_container
-            is supported.
+            op_type: The type of this op - must be of type tlq op enum (abbrv. 'toe'). If set, dynamic_define=False 
+            dynamic_define: True to preset this op type, False to allow it to be defined during game time.
 
         Returns:
-            The newly created `lab_container` entity.
+            The newly created tlq_op entity.
 
         """
-        lab_container = self.new_lab_entity('lc')
-        lab_container.add_property('open')
-#        lab_container.add_property('unsealed') # TODO not yet used
-        for n in range(num_uses):
-            # TODO single-arg-mvp: hack that only works if we have one mixture.
-            mix = self.new_lab_entity(entity_type='mx')
-            lab_container.add(mix)
-        return lab_container
+        
+        if not op_type:
+            op_type = 'idtoe'
+        else: # dynamic_define can only be set if op_type not set
+            assert(not dynamic_define)
+        
+        lab_op = self.new_lab_entity('tlq_op', name=name, desc=desc)
+
+        if dynamic_define:
+            lab_op.add_property('undefined')
+        else:
+            lab_op.add_property('defined')
+            
+        # set type of operation
+        self.add_fact("tlq_op_type", self.globals[op_type], lab_op)
+
+        # initialize state as unused and with nothing in input slot
+        lab_op.add_property('unused')
+        lab_op.add_property('empty_a')
+
+        # to support performing ops on multiple materials
+        mix = self.new_lab_entity(entity_type='mx')
+        lab_op.add(mix, input_slot='a')
+
+        return lab_op
         
 

@@ -358,7 +358,9 @@ class GlulxGameState(textworld.GameState):
     @property
     def score(self):
         if not hasattr(self, "_score"):
-            if self._state_tracking:
+            # TODO hack, to not go here, need to verify game_pregressoin working. 
+            # Meanwhile using score from self._extra_infos["score"]
+            if (self._state_tracking and False): 
                 self._score = self._game_progression.score
             else:
                 if "score" not in self._extra_infos:
@@ -375,7 +377,7 @@ class GlulxGameState(textworld.GameState):
     @property
     def has_won(self):
         if not hasattr(self, "_has_won"):
-            if self._compute_intermediate_reward:
+            if (self._compute_intermediate_reward and False): # TODO hack, using feedback from I7.
                 self._has_won = self._game_progression.completed
             else:
                 self._has_won = '*** The End ***' in self.feedback
@@ -443,6 +445,11 @@ class GlulxGameState(textworld.GameState):
     @property
     def entities(self):
         return self._game.entity_names
+
+    @property
+    def facts(self):
+        return self._inform7.gen_source_for_attributes(self.state.facts, 
+                                                            named=True)
 
     @property
     def extras(self):

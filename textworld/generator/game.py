@@ -375,17 +375,20 @@ class Game:
         """
         Modified from original TW implementation, for simplicity we
         currently don't use GameProgression but simply the quest
-        returned by the SketchGenerator.
+        returned by the QuestGenerator.
         """
         if self._main_quest is None:
             from textworld.generator.inform7 import Inform7Game
             inform7 = Inform7Game(self)
             desc = None
-            if len(self.quests) and self.quests[0].desc:
-                desc = self.quests[0].desc
-            self._main_quest = self.quests[0]
-            self._main_quest.desc = desc
-            self._main_quest.commands = inform7.gen_commands_from_actions(self._main_quest.actions)
+            if len(self.quests):
+                desc = self.quests[0].desc if self.quests[0].desc else "default desc."
+                self._main_quest = self.quests[0]
+                self._main_quest.desc = desc
+                if self._main_quest.actions:
+                    self._main_quest.commands = inform7.gen_commands_from_actions(self._main_quest.actions)
+                elif self._main_quest.win_events:
+                    self._main_quest.commands = inform7.gen_commands_from_actions(self._main_quest.win_events[0].actions)
         return self._main_quest
             
 
@@ -750,7 +753,10 @@ class EventProgression:
         if action is not None and not self._tree.empty:
             # Determine if we moved away from the goal or closer to it.
             reverse_action = self._tree.remove(action)
-            if reverse_action is None:  # Irreversible action.
+            
+            # TODO work-around to prevent wrong order of assigning to cause game to end (see #24)
+            # this needs to be fixed since assign should be agnostic to order but isn't
+            if reverse_action is None and 'op_run' in action.name:  # Irreversible action.
                 self._untriggerable = True  # Can't track quest anymore.
 
             self._policy = tuple(self._tree.flatten())  # Rebuild policy.

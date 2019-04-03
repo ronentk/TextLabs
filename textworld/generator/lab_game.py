@@ -22,7 +22,7 @@ from textworld.generator.data import KnowledgeBase
 from textworld.generator.game import GameOptions
 from textworld.generator.chaining import ChainingOptions
 from textworld.generator.surface_generator import SurfaceGenerationOptions
-from textworld.generator.sketch_generator import SketchGenerationOptions
+from textworld.generator.quest_generator import QuestGenerationOptions
 
 from textworld.generator.process_graph import MATERIAL_STATES
 
@@ -38,53 +38,6 @@ class InvalidLabConfigError(ValueError):
 
 
 
-@dataclass
-class LabConfig:
-    """
-    Represents the initial state of the lab and device avaiability and usage
-    targets for quest generation.
-    Arguments:
-        devices: available devices for this quest.
-    	min_uses_per_device: Generated quest must include at least this number 
-        of uses per device. Must be specified for each device in 'devices'.
-        max_uses_per_device: Generated quest may include at most this number of
-        uses per device. Must be specified for each device in 'devices'.
-    	lab_container_available: - flag indicating whether a lab_container is
-        available. Currently we only support one such instance.
-    	material_states: Starting states of each of the materials. Must be in
-        ['powder', 'liquid', 'solid']",
-    """
-    devices: List[str]
-    min_uses_per_device: Mapping[str, int]
-    max_uses_per_device: Mapping[str, int]
-    lab_container_available: bool
-    material_states: List[str]
-
-    def validiate(self):
-        """ Validate input fields """
-        device_types = uniquify(KnowledgeBase.default().types.descendants('sa'))
-        if not set(device_types).issuperset(set(self.devices)):
-            raise InvalidLabConfigError("Using undefined devices! Must be in %s" % (device_types))
-        if not MATERIAL_STATES.issuperset(set(self.material_states)):
-            raise InvalidLabConfigError("Using undefined material states!")
-        if not set(self.devices) <= self.min_uses_per_device.keys():
-            raise InvalidLabConfigError("Min. uses per device not defined for all devices.")
-        if not set(self.devices) <= self.max_uses_per_device.keys():
-            raise InvalidLabConfigError("Max. uses per device not defined for all devices.")
-        
-
-
-def load_lab_config(path: Path) -> LabConfig:
-    """
-    Load json file containing lab config and return LabConfig instance.
-    """
-    with path.open() as f:
-        raw_data = json.load(f)
-    
-    lab_config = LabConfig(**raw_data)
-    lab_config.validiate()
-    return lab_config
-
     
 class LabGameOptions(GameOptions):
     """
@@ -94,11 +47,11 @@ class LabGameOptions(GameOptions):
         seed:
             Sets specified seed for the random number generator controlling
             random elements of quest/text generation.
-        lab_config_path:
-            Path to file containing initial lab configuration.
         max_quest_length:
             Maximum number of actions comprising the minimal winning 
         policy.
+        preset_ops:
+            True to preset all operation types, false to allow them to be dynamically defined.
         surface_gen_options:
             Options controlling generation of surface text.
         sketch_gen_options:
@@ -107,16 +60,16 @@ class LabGameOptions(GameOptions):
 
     def __init__(self, seed: Optional[int] = None,
                  max_quest_length: Optional[int] = None,
-                 lab_config_path: Optional[Path] = None,
+                 preset_ops: Optional[bool] = False,
                 surface_gen_options: Optional[Union[Mapping, SurfaceGenerationOptions]] = None,
-                sketch_gen_options: Optional[SketchGenerationOptions] = None
+                sketch_gen_options: Optional[QuestGenerationOptions] = None
                 ):
         super(LabGameOptions, self).__init__()
         self.chaining = ChainingOptions() # use defaults
         self.surface_gen_options = SurfaceGenerationOptions() \
         if not surface_gen_options else surface_gen_options
         if not sketch_gen_options:
-            self.sketch_gen_options = SketchGenerationOptions()
+            self.sketch_gen_options = QuestGenerationOptions()
             self._default_sketch_opts = True
         else:
             self.sketch_gen_options = sketch_gen_options
@@ -127,11 +80,30 @@ class LabGameOptions(GameOptions):
             self._seeds = seed
         self._lab_config = None
 
+        self.preset_ops = preset_ops
+
 
     @property
     def default_sketch_opts(self) -> bool:
         return self._default_sketch_opts
+    
+    @property
+    def preset_ops(self) -> bool:
+        return self.sketch_gen_options.preset_ops
 
+    @preset_ops.setter
+    def preset_ops(self, value: bool) -> None:
+        self.sketch_gen_options.preset_ops = value
+        self.surface_gen_options.preset_ops = value
+
+    @property
+    def quest_reward(self) -> int:
+        return self.sketch_gen_options.quest_reward
+
+    @quest_reward.setter
+    def quest_reward(self, value: int) -> None:
+        self.sketch_gen_options.quest_reward = value
+        
     @property
     def max_quest_length(self) -> int:
         return self.sketch_gen_options.max_depth
@@ -139,7 +111,6 @@ class LabGameOptions(GameOptions):
     @max_quest_length.setter
     def max_quest_length(self, value: int) -> None:
         self.sketch_gen_options.max_depth = value
-        self._default_sketch_opts = False
         
     @property
     def max_search_steps(self) -> int:
@@ -148,23 +119,7 @@ class LabGameOptions(GameOptions):
     @max_search_steps.setter
     def max_search_steps(self, value: int) -> None:
         self.sketch_gen_options.max_steps = value
-        self._default_sketch_opts = False
-
-    @property
-    def lab_config(self) -> LabConfig:
-        return self._lab_config
     
-    @lab_config.setter
-    def lab_config(self, lab_config: LabConfig) -> None:
-        self._lab_config = lab_config
-    
-    
-    def load_lab_config(self, lab_config_path: Path) -> None:
-        """
-        Loads a configuration file defining initial game state. This should be a
-        JSON file, see LabConfig for required fields.
-        """
-        self.lab_config = load_lab_config(lab_config_path)
     
     @property
     def seeds(self):

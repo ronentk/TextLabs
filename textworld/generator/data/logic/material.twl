@@ -1,5 +1,5 @@
 # material
-type m : o {
+type m : e {
     predicates {
         powder(m);
         liquid(m);
@@ -17,7 +17,7 @@ type m : o {
     inform7 {
         type {
             kind :: "material";
-            definition :: "A material can be solid, powder or liquid (this is its state property).";
+            definition :: "A material can be solid, powder or liquid (this is its state property). Materials are portable.";
         }
 
         predicates {

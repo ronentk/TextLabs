@@ -1,0 +1,51 @@
+# op_desc
+type odsc : dsc {
+    predicates {
+
+    }
+
+    rules {
+
+      dlink/op_ri :: $at(P, r) & $at(op, r) & in(odsc, I) -> describes(odsc, op);
+      dlink/op_rr :: $at(P, r) & $at(op, r) & at(odsc, r) -> describes(odsc, op);
+      dlink/op_ir :: $at(P, r) & $in(op, I) & at(odsc, r) -> describes(odsc, op);
+      dlink/op_ii :: $at(P, r) & $in(op, I) & in(odsc, I) -> describes(odsc, op);
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "op_desc";
+        }
+
+        predicates {
+
+
+        }
+
+        commands {
+
+          dlink/op_ri :: "dlink {odsc} to {op}" :: "dlinking the {odsc} to the {op}";
+          dlink/op_rr :: "dlink {odsc} to {op}" :: "dlinking the {odsc} to the {op}";
+          dlink/op_ir :: "dlink {odsc} to {op}" :: "dlinking the {odsc} to the {op}";
+          dlink/op_ii :: "dlink {odsc} to {op}" :: "dlinking the {odsc} to the {op}";
+
+        }
+
+        code ::
+        """
+
+    Check dlinking a noun to something:
+    	if the second noun is a operation-like:
+    		unless the noun is a op_desc:
+    			say "You can only set the operation-like's description with a op_desc." instead;
+
+        """;
+
+    }
+}

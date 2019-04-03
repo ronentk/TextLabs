@@ -148,6 +148,10 @@ class Filter(Wrapper):
 
         if self.options.inventory:
             self._wrapped_env.enable_extra_info("inventory")
+            
+        # TODO - Enabled since we use state tracking but quest progression still need to be
+        # fixed
+        self._wrapped_env.enable_extra_info("score")
 
         game_state = super().reset()
         ob = game_state.feedback

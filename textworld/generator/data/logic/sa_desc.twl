@@ -1,0 +1,51 @@
+# sa_desc
+type sdsc : dsc {
+    predicates {
+
+    }
+
+    rules {
+
+      dlink/sa_ri :: $at(P, r) & $at(sa, r) & in(sdsc, I) -> describes(sdsc, m);
+      dlink/sa_rr :: $at(P, r) & $at(sa, r) & at(sdsc, r) -> describes(sdsc, m);
+      dlink/sa_ir :: $at(P, r) & $in(sa, I) & at(sdsc, r) -> describes(sdsc, m);
+      dlink/sa_ii :: $at(P, r) & $in(sa, I) & in(sdsc, I) -> describes(sdsc, m);
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "sa_desc";
+        }
+
+        predicates {
+
+
+        }
+
+        commands {
+
+          dlink/sa_ri :: "dlink {sdsc} to {sa}" :: "dlinking the {sdsc} to the {sa}";
+          dlink/sa_rr :: "dlink {sdsc} to {sa}" :: "dlinking the {sdsc} to the {sa}";
+          dlink/sa_ir :: "dlink {sdsc} to {sa}" :: "dlinking the {sdsc} to the {sa}";
+          dlink/sa_ii :: "dlink {sdsc} to {sa}" :: "dlinking the {sdsc} to the {sa}";
+
+        }
+
+        code ::
+        """
+
+    Check dlinking a noun to something:
+    	if the second noun is a synthesis_apparatus:
+    		unless the noun is an sa_desc:
+    			say "You can only set the synthesis_apparatus's description with a sa_desc." instead;
+
+        """;
+
+    }
+}

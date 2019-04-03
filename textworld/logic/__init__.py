@@ -1886,3 +1886,13 @@ class CompactAction:
     
     def __repr__(self):
         return "%s(%s)" % (self.name, ','.join([v.name for v in self.vars]))
+
+    def __eq__(self, other):
+        if isinstance(other, CompactAction):
+            names_eq = (self.name == other.name)
+            if len(self.vars) != len(other.vars):
+                return False
+            vars_eq = [v == u for (v,u) in zip(self.vars, other.vars)]
+            return (names_eq and all(vars_eq))
+        else:
+            return NotImplemented

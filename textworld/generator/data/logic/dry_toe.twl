@@ -1,0 +1,16 @@
+# drying_toe
+type drytoe : toe {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "drying_enum";
+        }
+
+        commands {
+
+        }
+    }
+}

@@ -1,0 +1,35 @@
+# tlq_op_type_enum
+type toe : g {
+
+    predicates {
+
+
+      initialized(toe);
+
+
+    }
+
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "tlq_op_type_enum";
+        }
+
+        commands {
+
+        }
+
+        predicates {
+
+
+          initialized(toe) :: "The {toe} is everywhere";
+
+
+        }
+
+
+    }
+}

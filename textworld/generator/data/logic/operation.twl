@@ -1,0 +1,108 @@
+# operation
+type op : e {
+    predicates {
+
+      used(op);
+      unused(op);
+      empty_a(op);
+      input_a(e, op);
+      output(e, op);
+      processed(op, e);
+      preceeds(op, op);
+
+      pot_multi_a(e, op);
+
+    }
+
+    rules {
+
+        op_o_obtain :: $at(P, r) & $at(op, r) & $used(op) & output(e, op) -> in(e, I);
+
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "operation-like";
+            definition :: "op_input_a is a kind of container. One op_input_a is part of every operation-like. op_output is a kind of container. One op_output is part of every operation-like. An op_mult_arg_holder is a kind of container. An op_mult_arg_holder is always closed. An op_mult_arg_holder is unopenable. One op_mult_arg_holder is part of every op_input_a. operation-like can be used or unused . An operation-like is usually unused.";
+        }
+
+        predicates {
+          used(op) :: "The {op} is used";
+          unused(op) :: "The {op} is unused";
+          processed(op, e) :: "The {op} has processed the {e}";
+          empty_a(op) :: ""; # Don't need this in inform7, only TW. Will only work if not win condition.
+          input_a(e, op) :: "The {e} is in the {op}'s op_input_a";
+          output(e, op) :: "The {e} is in the {op}'s op_output";
+          pot_multi_a(e, op) :: "In the {op}'s op_input_a's op_mult_arg_holder is a {e}";
+          preceeds(op, op') :: "The use-order of the {op} is less than The use-order of the {op'}"; # only for win conditions
+
+        }
+
+        commands {
+            op_o_obtain :: "op_o_obtain {op}" :: "op_o_obtaining the {op}";
+
+
+        }
+
+        code ::
+        """
+    [================== Op_assigning input A ========================]
+    Op_ia_assigning it to is an action applying to one carried thing and one touchable thing.
+    Understand "op_ia_assign [entity] to [operation-like]" as op_ia_assigning it to.
+
+    Check op_ia_assigning:
+    	if the second noun is used:
+    		say "You can only op_run operation-likes once!" instead.
+
+    Report op_ia_assigning:
+      say "Input A assigned!"
+
+    [================== Op_running ========================]
+    Op_running it is an action applying to one touchable thing.
+    Understand "op_run [thing]" as op_running it.
+
+    Check op_running:
+    	unless the noun is an operation-like:
+    		say "You can only op_run operation-likes!" instead;
+    	[Check if has been used before - only allowing one use.]
+    	if the noun is used:
+    		 say "You can only op_run operation-likes once!" instead.
+
+     [After performing any operation, record that the op has processed the result, and record the timestep at which it was used.]
+    After op_running:
+     	now the noun is used;
+     	let X be the current-step;
+     	Now the use-order of the noun is X;
+     	increase current-step by 1;
+     	let the OP_O be a random op_output which is part of the noun;
+     	let T be a random thing held by the OP_O;
+     	now the noun has processed T;
+
+
+    [=================== obtain_op_output =========================]
+    Op_o_obtaining is an action applying to one touchable thing.
+    Understand "op_o_obtain [operation-like]" as op_o_obtaining.
+    Check op_o_obtaining:
+    	if the noun is unused:
+    		say "You can only obtain results if operation has been run!" instead;
+    	let the OP_O be a random op_output which is part of the noun;
+    	unless the OP_O contains exactly one entity:
+    		say "Invalid output!" instead.
+
+    Carry out op_o_obtaining:
+    	let the OP_O be a random op_output which is part of the noun;
+     	let T be a random thing held by the OP_O;
+    	now the player carries T;
+
+    Report op_o_obtaining:
+    	say "Obtained output!"
+
+        """;
+    }
+}

@@ -56,6 +56,7 @@ class TextworldGamesEnv(gym.Env):
         self.request_infos = request_infos or EnvInfos()
         self.ob = None
         self.last_command = None
+        self.debug_env = None
         self.textworld_env = None
         self.current_gamefile = None
         self.seed(1234)
@@ -105,9 +106,12 @@ class TextworldGamesEnv(gym.Env):
 
         self.current_gamefile = next(self._gamefiles_iterator)
         env = textworld.start(self.current_gamefile)
+        self.debug_env = env
         self.textworld_env = Filter(self.request_infos)(env)
 
         self.ob, infos = self.textworld_env.reset()
+        # For debug purposes
+        infos['game_file'] = self.current_gamefile
         return self.ob, infos
 
     def skip(self, nb_games: int = 1) -> None:

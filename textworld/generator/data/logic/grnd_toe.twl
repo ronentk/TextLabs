@@ -1,0 +1,16 @@
+# grinding_toe
+type grndtoe : toe {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "grinding_enum";
+        }
+
+        commands {
+
+        }
+    }
+}

@@ -1,0 +1,16 @@
+# compact_toe
+type cmptoe : toe {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "compacting_enum";
+        }
+
+        commands {
+
+        }
+    }
+}

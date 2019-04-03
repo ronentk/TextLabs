@@ -1,0 +1,33 @@
+# entity
+type e : o {
+    predicates {
+
+      describes(dsc, e);
+
+    }
+
+    rules {
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "entity";
+            definition :: "descs_holder is a kind of unopenable container. A descs_holder is usually closed. One descs_holder is part of every entity.";
+        }
+
+        predicates {
+          describes(dsc, e) :: "The {dsc} is in {e}'s descs_holder";
+
+        }
+
+        commands {
+
+
+        }
+    }
+}

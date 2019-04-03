@@ -63,7 +63,7 @@ class Inform7Game:
 
         return source
 
-    def gen_source_for_attribute(self, attr: Proposition) -> Optional[str]:
+    def gen_source_for_attribute(self, attr: Proposition, named=False) -> Optional[str]:
         pt = self.kb.inform7_predicates.get(attr.signature)
         if pt is None:
             msg = "Undefined Inform7's predicate: {}".format(attr.signature)
@@ -72,13 +72,16 @@ class Inform7Game:
 
         pred, template = pt
         mapping = pred.match(attr)
-        mapping = {ph.name: var.name for ph, var in mapping.items()}
+        if not named:
+            mapping = {ph.name: var.name for ph, var in mapping.items()}
+        else:
+            mapping = {ph.name: self.entity_infos[var.name].name for ph, var in mapping.items()}
         return template.format(**mapping)
 
-    def gen_source_for_attributes(self, attributes: Iterable[Proposition]) -> str:
+    def gen_source_for_attributes(self, attributes: Iterable[Proposition], named=False) -> str:
         source = ""
         for attr in attributes:
-            source_attr = self.gen_source_for_attribute(attr)
+            source_attr = self.gen_source_for_attribute(attr, named)
             if source_attr:
                 source += source_attr + ".\n"
 
@@ -140,6 +143,7 @@ class Inform7Game:
 
     def gen_source_for_rooms(self) -> str:
         source = ""
+        source += "Use MAX_EXPRESSION_NODES of 512 \n\n" # increase memory limits from default 256
         for room in self.game.world.rooms:
             room_infos = self.entity_infos[room.id]
             room_name = room_infos.name
@@ -235,12 +239,43 @@ class Inform7Game:
 
         # Add definition of 'empty'
         source += "Definition: a container is empty rather than non-empty if the first thing held by it is nothing."
+        
+        # rules for examining opbjects
+        source += textwrap.dedent("""\
+
+        After examining a noun:
+        	if the noun is a location-like:
+        		let the OH be a random o_holder which is part of the noun;
+        		say "At the [noun] are located: [a list of things on the OH]. ";
+        	if the noun is an entity:
+        		if a descs_holder is part of the noun:
+        			let DH be a random descs_holder which is part of the noun;
+        			say "The [noun]'s description is: [a list of things in the DH]. ";
+        	if the noun provides the property state:
+        		say "The [noun] is in state [the state of the noun]. ";
+        	if the noun is a mixture:
+        		let the current composition be a random composition which is part of the noun;
+        		say "The mixture is composed of [a list of things in the current composition]. ";
+        	if the noun is an operation-like:
+        		if the noun is used:
+        			say "[The noun]'s use-order is [the use-order of the noun].";
+        		otherwise:
+        			say "[The noun] hasn't been used.";
+        		if the noun is defined:
+        			say "[The noun]'s defined.";
+        		otherwise:
+        			say "[The noun] hasn't been defined.";
+        		say "[The noun]'s ttq_op_type is [a list of things typing the noun].";
+
+        """)
+        
 
         # Add definition of production and processing relations:
         # Production corresponds to creating a new material (result_new predicate)
         # such as a mixture
         # Processing corresponds to modifying an existing material such as
         # grinding from solid to powder (result_mod predicate)
+        # TODO fix documentation
         source += textwrap.dedent("""\
 
         Processing relates various things to various things.
@@ -250,6 +285,18 @@ class Inform7Game:
         The verb to have produced means the production relation.
 
         """)
+        
+        # Add definition of typing relation use to dynamically type the operations
+        # TODO fix documentation
+        source += textwrap.dedent("""\
+
+        Typing relates one global-like to various things.
+        The verb to type means the typing relation.
+
+        """)
+        
+        # Define step number used for tacking activation order of operations.
+        source += "The current-step is a number that varies.\n\n"
 
         # Mention that rooms have a special text attribute called 'internal name'.
         source += "A room has a text called internal name.\n\n"
@@ -274,7 +321,8 @@ class Inform7Game:
 
             kind = self.kb.inform7_variables[vtype]
             names = [entity.id for entity in entities]
-            source += "The " + " and the ".join(names) + " are {}s.\n".format(kind)
+            plural = 'es' if kind.endswith('s') else 's'
+            source += "The " + " and the ".join(names) + " are {}{}.\n".format(kind, plural)
             # All objects are privately-named and we manually define all "Understand as" phrases needed.
             source += "The " + " and the ".join(names) + " are privately-named.\n"
 
@@ -528,6 +576,7 @@ class Inform7Game:
             remove the list of containers from L;
             remove the list of supporters from L;
             remove the list of doors from L;
+            remove the list of global-likes from L;
             if the number of entries in L is greater than 0:
                 say "There is [L with indefinite articles] on the floor.";
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from typing import List
+from typing import List, Iterable
 from dataclasses import dataclass
 from networkx import DiGraph
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 
 from textworld.generator.game import Quest
-from textworld.logic import Variable
+from textworld.logic import Variable, Action
 from textworld.generator.data import KnowledgeBase
 
 
@@ -17,14 +17,25 @@ MATERIAL_STATES = {'powder', 'liquid', 'solid'}
 GENERATOR_DUMMY_TYPE = 'G' # dummy node used as source node of graph
 IGNORE_CMD = 'IGNORE'
 IGNORED_ACTS = {}
-REVERSE_ACTS = { 'take' } # actions to reverse so that graph flow is more legible
+
 
 # node colors by type
 color_map = {
-            'c': 'xkcd:cream',
-            'sa': 'cyan',
+            'dsc': 'xkcd:cream',
+            'op': 'cyan',
             'm': 'red',
-            GENERATOR_DUMMY_TYPE: 'gray'
+            'toe': 'xkcd:purple',
+            'sa': 'green'
+        }
+
+# operation types, for graph visualization
+type_map = {
+        'grndtoe': 'grinding',
+        'cmptoe': 'compacting',
+        'melttoe': 'melting',
+        'idtoe': 'unknown',
+        'mixtoe': 'mixing',
+        'drytoe': 'drying'
         }
 
 @dataclass
@@ -50,7 +61,12 @@ class EntityNode:
         return hash((self.var, self.g))
     
     def __str__(self):
-        return '%s@g%d' % (self.var.name, self.g)
+        if KnowledgeBase.default().types.is_descendant_of(self.var.type, ['toe']):
+            return type_map[self.var.type]
+        elif self.g > 0:
+            return '%s@g%d' % (self.var.name, self.g)
+        else:
+            return '%s' % (self.var.name)
     
     def __repr__(self):
         return '%s_%s@g%d' % (self.var.name, self.var.type, self.g)
@@ -81,14 +97,14 @@ class ActionEdge:
     
 def node_to_color(node: EntityNode) -> str:
     """ Return node's color string as per the entity type. """
-    default = 'gray'
-    if node.var.type == GENERATOR_DUMMY_TYPE: # handle separately since not in type tree
-        return color_map[GENERATOR_DUMMY_TYPE]
+    color = 'gray' # default
     for node_type in color_map.keys():
-        if KnowledgeBase.default().types.is_descendant_of(node.var.type, node_type):
-            return color_map[node_type]
-    # if type isn't found
-    return default
+        if node.var.type == GENERATOR_DUMMY_TYPE: # handle separately since not in type tree
+            return color
+        elif KnowledgeBase.default().types.is_descendant_of(node.var.type, node_type):
+            color = color_map[node_type]
+    
+    return color
 
 
 def edges_to_actions(edges):
@@ -119,12 +135,15 @@ class ProcessGraph(object):
     
     def add_new_state(self, e: Variable):
         """ 
-        Add new state for a given entity variable. This creates a new 
-        EntityNode with g increased by 1.
+        Add new state for a given entity variable (except Operation entities). 
+        This creates a new EntityNode with g increased by 1. 
         """
-        new_state_node = EntityNode(var=e, g=(self.curr_state(e).g + 1))
-        self.ent_states_map[e].append(new_state_node)
-        return new_state_node
+        if KnowledgeBase.default().types.is_descendant_of(e.type, ['op']):
+            return self.ent_states_map[e]
+        else:
+            new_state_node = EntityNode(var=e, g=(self.curr_state(e).g + 1))
+            self.ent_states_map[e].append(new_state_node)
+            return new_state_node
     
     def topological_sort_actions(self):
         """
@@ -166,39 +185,33 @@ class ProcessGraph(object):
         """ Get variables of all materials at start of process (g=0). """
         return [mat.var for mat in self.get_start_material_nodes()]
     
-    def from_tw_quest(self, quest: Quest) -> DiGraph:
+        
+    def from_tw_actions(self, actions: Iterable[Action]) -> DiGraph:
         """ Construct internal graph given a TextWorld Quest. """
-        # TODO verify validity, connected, ordering?
-        from textworld.generator.sketch_generator import convert_to_compact_action
+        # TODO verify validity?
+        from textworld.generator.quest_generator import convert_to_compact_action
         G = nx.DiGraph()
-        action_vars = [convert_to_compact_action(a) for a in quest.actions]
+        action_vars = [convert_to_compact_action(a) for a in actions]
         for action_var in action_vars:
             action_name = action_var.name
+            if action_name == 'op_o_obtain':
+                # add change state var as arg to this action so it gets processed
+                action_var.vars.insert(0, action_var.change_state_vars[0])
             ents = action_var.vars
             for e in ents:
                 self.init_ent(e)
             
-            # Collect all edges
-            edges = []
+            # ignore actions with single arg
+            if len(ents) != 2:
+                continue
             
-            # Edges for single argument actions (like open, etc...)
-            if len(ents) == 1:
-                if not action_var.change_state_vars: 
-                    continue # ignore drop, take, etc
-                else: # state change, add new node and edge to graph
-                    curr_state = self.curr_state(ents[0])
-                    new_state_node = self.add_new_state(ents[0])
-                    edges.append((curr_state, new_state_node, action_name))
-            elif len(ents) > 2:
-                err = "Action with more than 2 entities not supported"
-                raise ValueError(err)
+            is_state_change_action = len(action_var.change_state_vars) > 0
             
-            if action_name in REVERSE_ACTS:
-                ents.reverse()
-            edges.append((self.curr_state(ents[0]), self.curr_state(ents[1]), action_name))
-            
+            if not is_state_change_action:  
+                G.add_edge(self.curr_state(ents[0]), self.curr_state(ents[1]), action=action_name)
+
             # assuming just one material changes state per action
-            if action_var.change_state_vars:
+            else:
                 assert(len(action_var.change_state_vars) == 1)
                 v = action_var.change_state_vars[0]
                 assert(v == ents[0])
@@ -207,16 +220,16 @@ class ProcessGraph(object):
                 source = self.curr_state(ents[1]) 
                 # Add a new state for the device, we assume that each operation
                 # on a material is at a new state.
-                self.add_new_state(ents[1])
-                new_state_node = self.add_new_state(v)
-                # Add 'result' type edge which is a dummy action that isn't 
-                # part of the game but has semantic meaning.
-                edges.append((source, new_state_node, 'result'))
-                    
-            # Add all edges to graph
-            for edge in [a for a in edges if not a[2].replace('rev_', '') in IGNORED_ACTS]:
-                G.add_edge(edge[0], edge[1], action=edge[2])
-                  
+                if self.curr_state(v) in G.nodes():
+                    # entity already exists in graph
+                    target = self.add_new_state(v) 
+                else:
+                    # entity doesn't exist yet in graph, connect init node
+                    target = self.curr_state(v)
+
+                # Add 'result' type edge which corresponds to 'obtain' action
+                G.add_edge(source, target, action='obtain')
+
         # add Generator dummy node to be source of graph (cosmetic)
         self.generator = EntityNode(var=Variable(name='START', type=GENERATOR_DUMMY_TYPE), g=0)
         G.add_node(self.generator)
@@ -224,6 +237,29 @@ class ProcessGraph(object):
         materials = self.get_start_material_nodes()
         for m in materials:
             self.G.add_edge(self.generator, m, action='take')
+
+    def get_op_type(self, node: EntityNode) -> str:
+        assert(KnowledgeBase.default().types.is_descendant_of(node.var.type, 'tlq_op'))
+        op_type_node = [n for n in self.G.neighbors(node) if KnowledgeBase.default().types.is_descendant_of(n.var.type, 'toe')]
+        assert(len(op_type_node) == 1)
+        op_type_node = op_type_node[0]
+        return op_type_node.var.type
+    
+    def get_source_op(self, node: EntityNode) -> EntityNode:
+        assert(KnowledgeBase.default().types.is_descendant_of(node.var.type, ['m', 'sa']))
+        # return first operation node producing target node
+        for n in self.ent_states_map[node.var]:
+            for s,t in self.G.in_edges(n):
+                if s.var.type == 'tlq_op':
+                    return s
+        return None
+    
+    def rename_edges(self, node: EntityNode, orig: str, target: str, incoming: bool = True) -> None:
+        """ Rename a node's incoming or outgoing edges """
+        edges =  [e for e in self.G.in_edges(node)] if incoming else [e for e in self.G.out_edges(node)]
+        for edge in edges:
+            act = self.G.edges()[edge]['action']
+            self.G.edges()[edge]['action'] = act.replace(orig, target)
         
     
     def draw(self):
@@ -236,7 +272,7 @@ class ProcessGraph(object):
         edge_labels = dict([((u,v,),d['action'])
              for u,v,d in self.G.edges(data=True)])
         
-        node_labels = { n: ('%s@g%d' % (n.var.name, n.g)) for n in connected_G.nodes() }
+        node_labels = { n: str(n) for n in connected_G.nodes() }
         
         # Add dummy source node
         node_labels.update({self.generator: 'START'})

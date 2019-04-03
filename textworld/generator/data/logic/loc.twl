@@ -1,0 +1,34 @@
+# location
+type loc : e {
+    predicates {
+      location(e, loc);
+    }
+
+    rules {
+
+
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "location-like";
+            definition :: "o_holder is a kind of supporter. One o_holder is part of every location-like.";
+        }
+
+        predicates {
+          location(e, loc) :: "The {e} is on {loc}'s o_holder";
+
+        }
+
+        commands {
+
+        }
+
+    }
+}

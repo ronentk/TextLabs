@@ -1,0 +1,247 @@
+# tlq_operation
+type tlq_op : op {
+    predicates {
+
+      tlq_op_type(toe, tlq_op);
+
+      # to prevent changing type after assigning inputs
+      defined(tlq_op);
+      undefined(tlq_op);
+
+
+
+    }
+
+    rules {
+
+      op_run/i_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(idtoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m);
+
+      op_run/mix_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(mixtoe, tlq_op) & $defined(tlq_op) & input_a(mx,tlq_op) & unused(tlq_op) -> output(mx, tlq_op) & used(tlq_op) & processed(tlq_op, mx);
+
+      op_run/melt_pl :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(melttoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) & powder(m) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & liquid(m);
+      
+      op_run/melt_sl :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(melttoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) & solid(m) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & liquid(m);
+
+      op_run/melt_ll :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(melttoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) & liquid(m) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & liquid(m);
+      
+      op_run/compact_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(cmptoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & solid(m);
+
+      op_run/grindp_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(grndtoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) & powder(m) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & powder(m);
+
+      op_run/grinds_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(grndtoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) & solid(m) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & powder(m);
+
+      op_run/dryl_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(drytoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) & liquid(m) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m) & solid(m);
+
+      op_run/dry_m :: $at(P, r) & $at(tlq_op, r) & $tlq_op_type(drytoe, tlq_op) & $defined(tlq_op) & input_a(m,tlq_op) & unused(tlq_op) -> output(m, tlq_op) & used(tlq_op) & processed(tlq_op, m);
+
+      # Assign to input A when empty
+      op_i_a_assign/me :: $at(P, r) & $at(tlq_op, r) & $defined(tlq_op) & in(m, I) & empty_a(tlq_op) -> input_a(m, tlq_op);
+
+      # Assign to input A when holding one material
+      op_i_a_assign/m :: $at(P, r) & $at(tlq_op, r) & $defined(tlq_op) & input_a(m', tlq_op) & pot_multi_a(mx, tlq_op) & in(m, I) -> input_a(mx, tlq_op) & component(m, mx) & component(m', mx);
+
+      # Assign to input A when already holding mixture (op's own mixture)
+      op_i_a_assign/mxa :: $at(P, r) & $at(tlq_op, r) & $defined(tlq_op) & $input_a(mx, tlq_op) & in(m, I) -> component(m, mx);
+
+      op_type/id :: $at(P, r) & $at(tlq_op, r) & $initialized(idtoe) & undefined(tlq_op) & tlq_op_type(idtoe, tlq_op) -> tlq_op_type(idtoe, tlq_op) & defined(tlq_op);
+
+      op_type/cmp :: $at(P, r) & $at(tlq_op, r) & $initialized(cmptoe) & undefined(tlq_op) & tlq_op_type(idtoe, tlq_op) -> tlq_op_type(cmptoe, tlq_op) & defined(tlq_op);
+
+      op_type/mix :: $at(P, r) & $at(tlq_op, r) & $initialized(mixtoe) & undefined(tlq_op) & tlq_op_type(idtoe, tlq_op) -> tlq_op_type(mixtoe, tlq_op) & defined(tlq_op);
+
+      op_type/mlt :: $at(P, r) & $at(tlq_op, r) & $initialized(melttoe) & undefined(tlq_op) & tlq_op_type(idtoe, tlq_op) -> tlq_op_type(melttoe, tlq_op) & defined(tlq_op);
+
+      op_type/dry :: $at(P, r) & $at(tlq_op, r) & $initialized(drytoe) & undefined(tlq_op) & tlq_op_type(idtoe, tlq_op) -> tlq_op_type(drytoe, tlq_op) & defined(tlq_op);
+
+      op_type/grn :: $at(P, r) & $at(tlq_op, r) & $initialized(grndtoe) & undefined(tlq_op) & tlq_op_type(idtoe, tlq_op) -> tlq_op_type(grndtoe, tlq_op) & defined(tlq_op);
+
+
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "tlq_op";
+            definition :: "A tlq_op can be defined or undefined. A tlq_op is usually undefined. A tlq_op_type is a kind of value. The tlq_op_types are mixing, compacting, grinding, melting, or identity. A tlq_op_type is usually identity. A tlq_op has a tlq_op_type called the type.";
+        }
+
+        predicates {
+
+        defined(tlq_op) :: "The {tlq_op} is defined";
+        undefined(tlq_op) :: "The {tlq_op} is undefined";
+
+        tlq_op_type(toe, tlq_op) :: "The {toe} types the {tlq_op}";
+
+        }
+
+        commands {
+            op_run/i_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/mix_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/melt_pl :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/melt_sl :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/melt_ll :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/grinds_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/grindp_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/compact_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/dryl_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+            op_run/dry_m :: "op_run {tlq_op}" :: "op_running the {tlq_op}";
+
+            op_i_a_assign/mxa :: "op_ia_assign {m} to {tlq_op}" :: "op_ia_assigning the {m} to the {tlq_op}";
+            op_i_a_assign/me :: "op_ia_assign {m} to {tlq_op}" :: "op_ia_assigning the {m} to the {tlq_op}";
+            op_i_a_assign/m :: "op_ia_assign {m} to {tlq_op}" :: "op_ia_assigning the {m} to the {tlq_op}";
+
+            op_type/id :: "op_type {tlq_op} to {idtoe}" :: "op_typing the {tlq_op} to the {idtoe}";
+            op_type/cmp :: "op_type {tlq_op} to {cmptoe}" :: "op_typing the {tlq_op} to the {cmptoe}";
+            op_type/mlt :: "op_type {tlq_op} to {melttoe}" :: "op_typing the {tlq_op} to the {melttoe}";
+            op_type/mix :: "op_type {tlq_op} to {mixtoe}" :: "op_typing the {tlq_op} to the {mixtoe}";
+            op_type/grn :: "op_type {tlq_op} to {grndtoe}" :: "op_typing the {tlq_op} to the {grndtoe}";
+            op_type/dry :: "op_type {tlq_op} to {drytoe}" :: "op_typing the {tlq_op} to the {drytoe}";
+
+
+
+
+        }
+
+        code ::
+        """
+    [################### Op_typing ##################################]
+    [Set the type of operation that will be performed when op is run.]
+    Op_typing it to is an action applying to one touchable thing and one thing.
+    Understand "op_type [tlq_op] to [tlq_op_type_enum]" as op_typing it to.
+
+    Check op_typing:
+    	if the noun is defined:
+    		say "You can only set the op_type once." instead;
+
+    Carry out op_typing:
+    	now the second noun types the noun;
+    	now the noun is defined;
+
+
+    Report op_typing:
+    	say "Set op_type!"
+
+    [================== Op_assigning input A ========================]
+    Check op_ia_assigning:
+    	if the noun is a tlq_op:
+    		let the OP_IA be a random op_input_a which is part of the second noun;
+    		let the OP_MAH be a random op_mult_arg_holder which is part of the OP_IA;
+    		if the noun is a material:
+    			unless the OP_IA contains exactly one mixture:
+    				let M be a random mixture held by the OP_MAH;
+    				if M is nothing:
+    					say "this operator doesn't support material inputs." instead;
+    		otherwise:
+    			unless the OP_IA is empty:
+    				say "Only single input supported for this type." instead;
+
+    Carry out op_ia_assigning:
+    	let the OP_IA be a random op_input_a which is part of the second noun;
+    	let the OP_MAH be a random op_mult_arg_holder which is part of the OP_IA;
+    	if the noun is a material:
+    		if the OP_IA is empty:
+    			now the noun is in the OP_IA;
+    		otherwise if the OP_MAH contains exactly one mixture:
+    			[merge input with the ops mult_arg_holder]
+    			let M be the first thing held by the OP_IA;
+    			let MX be a random mixture held by the OP_MAH;
+    			now MX is in the OP_IA;
+    			let C be a random composition which is part of MX;
+    			now the noun is in C;
+    			now M is in C;
+    		otherwise:
+    			[add input to the mult_arg_holder held in input]
+    			let MX be a random mixture held by the OP_IA;
+    			let C be a random composition which is part of MX;
+    			now the noun is in C;
+    	otherwise:
+    		now the noun is in the OP_IA;
+
+    [#################### tlq_op running ############################]
+    Check op_running:
+    	unless the noun is defined:
+        	say "You can only op_run defined tlq_ops!" instead;
+    [==================== Identity op ===========================]
+
+    Carry out op_running when the idtoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	let the OP_O be a random op_output which is part of the noun;
+    	let T be the first thing held by the OP_IA;
+    	now the T is in OP_O;
+
+    [==================== Melting op ===========================]
+
+    Carry out op_running when the melttoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	let the OP_O be a random op_output which is part of the noun;
+    	let M be a random material held by the OP_IA;
+    	now M is liquid;
+    	now M is in OP_O;
+
+    [==================== Mixing op ===========================]
+
+    Check op_running when the mixtoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	unless the OP_IA contains exactly one mixture:
+    		say "You can only run the mixing operation if the input is a mixture." instead.
+
+    Carry out op_running when the mixtoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	let the OP_O be a random op_output which is part of the noun;
+    	let MX be a random mixture held by the OP_IA;
+    	now MX is in OP_O;
+
+    [==================== Compacting op ===========================]
+    Check op_running when the cmptoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	unless the OP_IA contains exactly one material:
+    		say "You can only run the compact operation if the input is one material." instead.
+
+    Carry out op_running when the cmptoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	let the OP_O be a random op_output which is part of the noun;
+    	let M be a random material held by the OP_IA;
+    	now M is solid;
+    	now M is in OP_O;
+
+
+    [==================== Drying op ===========================]
+
+    Check op_running when the drytoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	unless the OP_IA contains exactly one material:
+    		say "You can only run the drying operation if the input is one material." instead.
+
+    Check op_running when the drytoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	let the OP_O be a random op_output which is part of the noun;
+    	let M be a random material held by the OP_IA;
+    	if M is liquid:
+    		now M is solid;
+    	now M is in OP_O;
+
+    [==================== Grinding op ===========================]
+
+    Check op_running when the grndtoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	unless the OP_IA contains exactly one material:
+    		say "You can only run the grind operation if the input is one material." instead;
+    	let M be a random material held by the OP_IA;
+    	[TODO may not need this]
+    	if M is liquid:
+    		say "You can only grind [M] if solid or powder." instead;
+
+    Carry out op_running when the grndtoe_0 types the noun:
+    	let the OP_IA be a random op_input_a which is part of the noun;
+    	let the OP_O be a random op_output which is part of the noun;
+    	let M be a random material held by the OP_IA;
+    	now M is powder;
+    	now M is in OP_O;
+        """;
+    }
+}

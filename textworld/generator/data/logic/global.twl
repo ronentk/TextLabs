@@ -1,0 +1,16 @@
+# global
+type g : b {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "global-like";
+        }
+
+        commands {
+
+        }
+    }
+}

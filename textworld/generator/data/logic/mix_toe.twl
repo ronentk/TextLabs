@@ -1,0 +1,16 @@
+# mixing_enum
+type mixtoe : toe {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "mixing_enum";
+        }
+
+        commands {
+
+        }
+    }
+}

@@ -69,11 +69,12 @@ def play(game_file: str, agent: Optional[Agent] = None, max_nb_steps: int = 1000
             agent = HumanAgent(autocompletion=False)
         except AttributeError:
             agent = HumanAgent()
-
+    
+    env.enable_extra_info("score")
     agent.reset(env)
     if wrapper is not None:
         env = wrapper(env)
-
+    
     game_state = env.reset()
     if not silent:
         env.render(mode="human")

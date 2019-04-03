@@ -7,8 +7,8 @@ import os
 import glob
 from os.path import join as pjoin
 from shutil import copyfile, copytree, rmtree
-from typing import Optional, Mapping
-
+from typing import Optional, Mapping, List
+from dataclasses import dataclass
 from textworld.logic import GameLogic
 from textworld.generator.vtypes import VariableType, VariableTypeTree
 from textworld.utils import maybe_mkdir, RegexDict
@@ -88,6 +88,66 @@ def _to_regex_dict(rules):
 
     return RegexDict(rules_dict)
 
+@dataclass
+class Inform7Command:
+    """ 
+    Represents the Inform7 command. 
+    Possible command formats are:
+        '<command>'
+        '<command> args[0]'
+        '<command> args[0] <preposition> args[1]'
+        
+    """
+    command: str
+    args: List[str] = None
+    preposition: str = ''
+    
+    def __repr__(self):
+        if not self.args:
+            return self.command
+        elif len(self.args) == 1:
+            return '{} {}'.format(self.command, self.args[0])
+        elif len(self.args) == 2:
+            return '{} {} {} {}'.format(self.command, 
+                                        self.args[0],
+                                        self.preposition,
+                                        self.args[1])
+        else:
+            args = '_'.join(self.args) if self.args else ''
+            return '{}_{}{}'.format(self.command, args, '_' + self.preposition)
+        
+    def __str__(self):
+        if not self.args:
+            return self.command
+        elif len(self.args) == 1:
+            return '{} {}'.format(self.command, self.args[0])
+        elif len(self.args) == 2:
+            return '{} {} {} {}'.format(self.command, 
+                                        self.args[0],
+                                        self.preposition,
+                                        self.args[1])
+        else:
+            args = '_'.join(self.args) if self.args else ''
+            return '{}_{}{}'.format(self.command, args, '_' + self.preposition)
+        
+    def __dict__(self):
+        d = {
+                'command': self.command,
+                'args': self.args,
+                'preposition': self.preposition,
+                'string': self.__str__()
+            }
+        return d
+
+def to_i7_cmd_struct(i7_cmd: str) -> Inform7Command:
+    sp = i7_cmd.split(' ')
+    prep = ''
+    short_cmd_name = sp[0] # assuming action name is first word in command sentence
+    cmd_args = [(w.strip('{}'), i) for i,w in enumerate(sp) if (('{' in w) and ('}' in w))]
+    if len(cmd_args) == 2:
+        prep = sp[cmd_args[0][1] + 1]
+    return  Inform7Command(short_cmd_name, [c for c,i in cmd_args], prep)
+        
 
 class KnowledgeBase:
     def __init__(self, logic: GameLogic, text_grammars_path: str):
@@ -146,6 +206,13 @@ class KnowledgeBase:
             "text_grammars_path": self.text_grammars_path,
         }
         return data
+    
+    def all_commands(self):
+        cmds = {}
+        for i7_cmd in self.inform7_commands.values():
+            i7_cmd_struct = to_i7_cmd_struct(i7_cmd)
+            cmds.update({str(i7_cmd_struct): i7_cmd_struct})
+        return cmds
 
 
 # On module load.

@@ -1,16 +1,15 @@
 from . import TokenGenerator
 
 
-class Mixture(TokenGenerator):
+class Mdsc(TokenGenerator):
 
     def __init__(self, **kwargs):
-        kwargs['symbol'] = 'mx'
-        kwargs['vocab'] = {"mixture1", "mixture2", "mixture3", "mixture4",
-        "mixture5", "mixture6", "mixture7", "mixture8",
-        "mixture9", "mixture10", "mixture11", "mixture12"}
+        kwargs['symbol'] = 'mdsc'
+        kwargs['vocab'] = {"matdesc1", "matdesc2", "matdesc3", "matdesc4",
+        "matdesc5", "matdesc6", "matdesc7", "matdesc8",
+        "matdesc9", "matdesc10", "matdesc11", "matdesc12"}
         super().__init__(**kwargs)
         self.unique = True
-
 
     def instantiate(self):
         return self.generate(unique=False)

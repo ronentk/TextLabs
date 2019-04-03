@@ -1,0 +1,51 @@
+# mat_desc
+type mdsc : dsc {
+    predicates {
+
+    }
+
+    rules {
+
+      dlink/m_ri :: $at(P, r) & $at(m, r) & in(mdsc, I) -> describes(mdsc, m);
+      dlink/m_rr :: $at(P, r) & $at(m, r) & at(mdsc, r) -> describes(mdsc, m);
+      dlink/m_ir :: $at(P, r) & $in(m, I) & at(mdsc, r) -> describes(mdsc, m);
+      dlink/m_ii :: $at(P, r) & $in(m, I) & in(mdsc, I) -> describes(mdsc, m);
+
+
+
+    }
+
+	reverse_rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "mat_desc";
+        }
+
+        predicates {
+
+
+        }
+
+        commands {
+          dlink/m_ri :: "dlink {mdsc} to {m}" :: "dlinking the {mdsc} to the {m}";
+          dlink/m_rr :: "dlink {mdsc} to {m}" :: "dlinking the {mdsc} to the {m}";
+          dlink/m_ir :: "dlink {mdsc} to {m}" :: "dlinking the {mdsc} to the {m}";
+          dlink/m_ii :: "dlink {mdsc} to {m}" :: "dlinking the {mdsc} to the {m}";
+          
+        }
+
+        code ::
+        """
+
+    Check dlinking a noun to something:
+    	if the second noun is a material:
+    		unless the noun is a mat_desc:
+    			say "You can only set the material's description with a mat_desc." instead;
+
+        """;
+
+    }
+}

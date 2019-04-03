@@ -37,7 +37,7 @@ class TokenGenerator:
         instantiation.
     
     """
-    def __init__(self, symbol: str = DEFAULT_SYMBOL, tgstring=None, seed: int = None, vocab: Mapping = {}, token_generator_map: Mapping = {}):
+    def __init__(self, symbol: str = DEFAULT_SYMBOL, tgstring=None, seed: int = None, vocab: Mapping = {}, token_generator_map: Mapping = {}, unique: bool = True):
         
         # maps between surface name and internal name and vice versa
         self.generated_to_internal = {}
@@ -47,7 +47,7 @@ class TokenGenerator:
         self.tg_map = token_generator_map
         self.seed = seed if seed else randint(65635)
         self.rng = RandomState(self.seed)
-        
+        self.unique = unique
         if not symbol:
             self._symbol = self.symbol()
         else:
@@ -86,7 +86,7 @@ class TokenGenerator:
         self.internal_to_generated.update({internal_name: generated_name})
         
 
-    def generate(self, unique: bool = True, internal_name: Optional[str] = None) -> str:
+    def generate(self, internal_name: Optional[str] = None) -> str:
         """ 
         Generate entity name from this token generator type. 
         
@@ -98,12 +98,12 @@ class TokenGenerator:
         """
         if self.vocab:
             generated_name = self.rng.choice(list(self.vocab))
-            if unique:
+            if self.unique:
                 self.vocab.remove(generated_name)
                 self.register_internal(generated_name,internal_name)
         else: # default name
             generated_name = self.next_internal_name()
-            if unique:
+            if self.unique:
                 self.register_internal(generated_name=generated_name, internal_name=internal_name)
         return generated_name
                 

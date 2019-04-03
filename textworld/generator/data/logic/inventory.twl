@@ -8,13 +8,20 @@ type I {
         inventory :: at(P, r) -> at(P, r);  # Nothing changes.
 
         take :: $at(P, r) & at(o, r) -> in(o, I);
-        take/c :: $at(P, r) & $at(c, r) & $open(c) & in(o, c) -> in(o, I);
+        drop :: $at(P, r) & in(o, I) -> at(o, r);
+
+        locate :: $at(P, r) & $at(loc, r) & in(e, I) -> location(e, loc);
+
+        
+
         examine/I :: in(o, I) -> in(o, I);  # Nothing changes.
         examine/s :: at(P, r) & $at(s, r) & $on(o, s) -> at(P, r);  # Nothing changes.
         examine/c :: at(P, r) & $at(c, r) & $open(c) & $in(o, c) -> at(P, r);  # Nothing changes.
     }
 
     reverse_rules {
+    
+        take :: drop;
 
     }
 
@@ -25,14 +32,29 @@ type I {
 
         commands {
             take :: "take {o}" :: "taking the {o}";
-            take/c :: "take {o} from {c}" :: "removing the {o} from the {c}";
-            
+            drop :: "drop {o}" :: "dropping the {o}";
+
 
             inventory :: "inventory" :: "taking inventory";
+
+            locate :: "locate {e} at {loc}" :: "locating the {e} at the {loc}";
 
             examine/I :: "examine {o}" :: "examining the {o}";
             examine/s :: "examine {o}" :: "examining the {o}";
             examine/c :: "examine {o}" :: "examining the {o}";
         }
+
+        code ::
+        """
+    Locating it at is an action applying to one carried thing and one touchable thing.
+    Understand "Locate [entity] at [location-like]" as locating it at.
+
+    Carry out locating:
+        let the OH be a random o_holder which is part of the second noun;
+        now the noun is on the OH.
+
+    Report locating:
+        say "Located entity at location!"
+        """;
     }
 }

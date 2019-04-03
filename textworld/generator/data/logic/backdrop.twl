@@ -1,0 +1,16 @@
+# backdrop
+type b : t {
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "backdrop";
+        }
+
+        commands {
+
+        }
+    }
+}

@@ -321,7 +321,7 @@ class World:
                 obj.matching_entity_id = fact.arguments[1].name
                 other_obj.matching_entity_id = fact.arguments[0].name
 
-            if fact.name in ["in", "on", "at", "potential"]:
+            if fact.name in ["in", "on", "at", "potential", "pot_multi_a", "pot_multi_b"]:
                 holder = self._get_entity(fact.arguments[1])
                 holder.content.append(obj)
 

@@ -264,17 +264,13 @@ class _Chainer:
             if not action:
                 continue
 
-# Some navigation related stuff, seems like it can cause trouble 
-# with our search
-#            if not self.check_action(node, action):
-#                continue
-
             state = self.apply(node, action)
             if not state:
                 continue
 
             used = used | {action}
             yield _Node(node, node, state, action, rules, used, node.depth + 1, node.breadth)
+
 
     def backtrack(self, node: _Node) -> Iterable[_Node]:
         """
@@ -421,9 +417,7 @@ class _Chainer:
             return None
 
         new_state.apply(action)
-        # Removed assertion for check state since we can allow actions out of constraints but won't expand them
-        if not self.check_state(new_state):
-            return None
+        
 
         # Detect cycles
         state = new_state.copy()

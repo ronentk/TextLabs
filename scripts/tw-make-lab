@@ -102,13 +102,8 @@ if __name__ == "__main__":
     options.surface_gen_options.merge_parallel_actions = args.merge_parallel_actions
     options.surface_gen_options.merge_serial_actions = args.merge_serial_actions
 
-    if args.subcommand == "custom":
-        options.load_lab_config(Path(args.lab_config_path))
-        options.sketch_gen_options.max_depth = args.max_quest_length
-        game_file, game = textworld.make_custom_lab(options)
-                
 
-    elif args.subcommand == "challenge":
+    if args.subcommand == "challenge":
         from textworld.challenges import CHALLENGES
         print(args.challenge)
         _, challenge, level = args.challenge.split("-")

@@ -29,7 +29,7 @@ from textworld.generator.maker import GameMaker
 from textworld.generator.lab_game_maker import LabGameMaker
 from textworld.generator.logger import GameLogger
 
-from textworld.generator.sketch_generator import SketchGenerationOptions, WinConditionType
+from textworld.generator.quest_generator import QuestGenerationOptions, WinConditionType
 from textworld.generator.surface_generator import SurfaceGenerator
 
 
@@ -277,7 +277,7 @@ def make_lab_game(options: LabGameOptions) -> Game:
             limbo.add(device)
             
             
-    quest_gen_options = SketchGenerationOptions(max_depth=max_quest_length,
+    quest_gen_options = QuestGenerationOptions(max_depth=max_quest_length,
                             max_steps=max_search_steps,
                             win_condition=WinConditionType.ALL,
                             quest_rng=rng_quest,

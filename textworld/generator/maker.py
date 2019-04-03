@@ -147,12 +147,14 @@ class WorldEntity:
         """
         self.add_fact(name, self)
 
-    def add(self, *entities: List["WorldEntity"]) -> None:
+    def add(self, *entities: List["WorldEntity"], input_slot: str = 'a') -> None:
         """ Add children to this entity. """
         if KnowledgeBase.default().types.is_descendant_of(self.type, "r"):
             name = "at"
-        elif KnowledgeBase.default().types.is_descendant_of(self.type, ["lc"]):
-            name = "potential"
+        # adding a child entity to an operation means setting one of its input slots
+        elif KnowledgeBase.default().types.is_descendant_of(self.type, ["op"]):
+            assert input_slot in ['a', 'b']
+            name = "pot_multi_{}".format(input_slot)
         elif KnowledgeBase.default().types.is_descendant_of(self.type, ["c", "I"]):
             name = "in"
         elif KnowledgeBase.default().types.is_descendant_of(self.type, "s"):
@@ -328,6 +330,7 @@ class GameMaker:
         self.quests = []
         self.rooms = []
         self.paths = []
+        self.globals = {} # global variables hack for entities that must be accessible from anywhere
         self._types_counts = KnowledgeBase.default().types.count(State())
         self.player = self.new(type='P')
         self.inventory = self.new(type='I')
@@ -344,6 +347,9 @@ class GameMaker:
 
         for path in self.paths:
             facts += path.facts
+
+        for g in self.globals.values():
+            facts += g.facts
 
         facts += self.inventory.facts
         facts += self._distractors_facts
@@ -415,6 +421,10 @@ class GameMaker:
         if type == "r":
             entity = WorldRoom(var, name, desc)
             self.rooms.append(entity)
+        elif KnowledgeBase.default().types.is_descendant_of(type, ["g"]):
+            name = var_id
+            desc = "A global variable."
+            entity = WorldEntity(var, name, desc)
         else:
             entity = WorldEntity(var, name, desc)
 
@@ -580,7 +590,7 @@ class GameMaker:
 
         # Skip "None" actions.
         actions = [action for action in recorder.actions if action is not None]
-#        print("Recorded %d winning actions, they are: %s" % (len(actions), actions))
+        
         # Ask the user which quests have important state, if this is set
         # (if not, we assume the last action contains all the relevant facts)
         winning_facts = None

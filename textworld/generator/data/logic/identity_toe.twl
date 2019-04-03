@@ -1,0 +1,17 @@
+# identity_toe
+type idtoe : toe {
+
+    rules {
+
+    }
+
+    inform7 {
+        type {
+            kind :: "identity_enum";
+        }
+
+        commands {
+
+        }
+    }
+}

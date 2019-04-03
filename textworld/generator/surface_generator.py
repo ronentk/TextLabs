@@ -5,18 +5,27 @@ from textworld.generator.data import KnowledgeBase
 from textworld.generator.game import Quest, CompactAction
 from textworld.generator.templated_text_generator import TemplatedTextGenerator, templatize_text, templatize_text_list
 from textworld.generator.token_generators import TokenGenerator
-from textworld.generator.process_graph import ProcessGraph, REVERSE_ACTS, IGNORE_CMD
+from textworld.generator.process_graph import ProcessGraph, IGNORE_CMD, EntityNode
 from numpy.random import RandomState, randint
 from textworld.utils import quest_gen_logger
+
+
+REVERSE_ACTS = { 'take', 'obtain' } # actions to reverse so that graph flow is more legible
+
 
 # Descriptions used upon examining entities in game.
 descriptions = {
             'm': 'A material.',
             'mx': 'A mixture, which is a type of material. Composed of a number of materials.',
-            'fd': 'A furnace device. Used for melting materials.',
-            'md': 'A milling device. Used for grinding materials.',
-            'pd': 'A press device. Used for compacting or pressing materials.',
-            'lc': 'A lab container. Used for mixing materials.'
+            'tlq_op': 'A TextLabQuest operation.',
+            'sa': 'A synthesis apparatus. Operations happen here!',
+            'odsc': 'Operator descriptor.',
+            'mdsc': 'Material descriptor.',
+            'sdsc': 'Synthesis apparatus descriptor.',
+            }
+
+propositionals ={
+        'describe': '{arg_2} with {arg_1}'
         }
 
 # Basic dynamic tokens
@@ -25,18 +34,21 @@ DT_LIST = [
           ("MIDDLE", "##Next|After that|Following that|In the next stage##"),
           ("FINAL", "##Finally|To finish##"),
           ("IMP_REF", "##them|the result##"),
-           ("INIT_MATERIALS", "The ##initial|starting## material")
+          ("INIT_MATERIALS", "The ##initial|starting## material"),
+          ("RESULT", "the ##result of|result obtained by##")
         ]
 
 # Commands to omit from the quest instructions (need to be implicitly 
 # understood). Can be configured for each difficulty mode.       
 SKIP_ACTIONS_BY_MODE = {
-        'easy': { 'result': True },
-        'medium': { 'result': True, 
-                    'take': True
+        'easy': { 'op_type': True },
+        'medium': { 'obtain': True, 
+                    'take': True,
+                    'op_type': True
                  },
-        'hard': { 'result': True, 
-                    'take': True
+        'hard': { 'obtain': True, 
+                    'take': True,
+                    'op_type': True
                  },
         'debug': { }
             
@@ -65,7 +77,7 @@ class SurfaceGenerationOptions:
         these are explicitly set. Possible options: ["easy", "medium", "hard"]
         
     """
-    __slots__ = ['difficulty_mode', 'merge_parallel_actions', 'merge_serial_actions', 'implicit_refs']
+    __slots__ = ['op_type_map','difficulty_mode', 'merge_parallel_actions', 'merge_serial_actions', 'implicit_refs', 'preset_ops']
 
     def __init__(self, options=None, **kwargs):
         if isinstance(options, SurfaceGenerationOptions):
@@ -74,14 +86,16 @@ class SurfaceGenerationOptions:
         options = options or kwargs
 
         self.difficulty_mode = options.get("difficulty_mode", "easy")
-        self.merge_parallel_actions = options.get("merge_parallel_actions", (self.difficulty_mode != "easy"))
+        self.merge_parallel_actions = options.get("merge_parallel_actions", True)
         self.merge_serial_actions = options.get("merge_serial_actions", (self.difficulty_mode != "easy"))
         self.implicit_refs = options.get("implicit_refs", (self.difficulty_mode != "easy"))
+        self.preset_ops = options.get("preset_ops", False)
+        self.op_type_map = options.get("op_type_map", {})
 
     def set_difficulty_mode(self, mode: str) -> None:
         """Set the generation flags according to difficulty."""
-        self.difficulty_mode =mode
-        self.merge_parallel_actions = (self.difficulty_mode != "easy")
+        self.difficulty_mode = mode
+        self.merge_parallel_actions = True
         self.merge_serial_actions = (self.difficulty_mode != "easy")
         self.implicit_refs = (self.difficulty_mode == "hard")
 
@@ -102,8 +116,8 @@ class SurfaceGenerationOptions:
         def _unsigned(n):
             return n & 0xFFFFFFFFFFFFFFFF
         
-        # skip difficulty mode
-        values = [int(getattr(self, s)) for s in self.__slots__[1:]]
+        # skip difficulty mode and map
+        values = [int(getattr(self, s)) for s in self.__slots__[2:]]
         option = "".join(map(str, values))
 
         from hashids import Hashids
@@ -219,20 +233,28 @@ class SurfaceGenerator:
                     continue
                 if (act_counts[ae.action]): 
                     if (act_counts[action] > 1):
-                        # If we're merging actions, and all starting materials participate
-                        # in action, the action argument should be simply 'materials'
-                        if (act_counts[action] == num_start_mats):
-                            cmd = '%s the materials' % (action)
-
-                        # If not all starting materials participating, refer to 
-                        # each by name (e.g., X, Y and Z)
-                        else:
-                            target_mats = [ae.source.name for ae in \
-                                           incoming_actions if ae.action == action]
-                            cmd = '%s %s' % (action,
-                                             list_to_contents_str(
-                                            templatize_text_list(target_mats)))
-                        
+                        if KnowledgeBase.default().types.is_descendant_of(ae.source.var.type, 'm'):
+                            # If we're merging actions, and all starting materials participate
+                            # in action, the action argument should be simply 'materials'
+                            if (act_counts[action] == num_start_mats) and self.surface_gen_options.implicit_refs:
+                                cmd = '%s the materials' % (action)
+    
+                            # If not all starting materials participating, refer to 
+                            # each by name (e.g., X, Y and Z)
+                            else:
+                                target_mats = [ae.source.var.name for ae in \
+                                               incoming_actions if ae.action == action]
+                                cmd = '%s %s' % (action,
+                                                 list_to_contents_str(
+                                                templatize_text_list(target_mats)))
+                        elif KnowledgeBase.default().types.is_descendant_of(ae.source.var.type, 'dsc'):
+                            target_descs = [ae.source.var.name for ae in \
+                                               incoming_actions if ae.action == action]
+                            arg_1 = list_to_contents_str(templatize_text_list(target_descs))
+                            arg_2 = templatize_text(ae.target.var.name)
+                            arg_str = propositionals[ae.action].format(**{'arg_1': arg_1,
+                                                    'arg_2': arg_2})
+                            cmd = '%s %s' % (action, arg_str)
                         # if there are commands with an identical surface
                         # representation, differentiate between them using cnt
                         cnt = get_cmd_count(cmd, 
@@ -282,16 +304,40 @@ class SurfaceGenerator:
                         serial_act_to_surface_map[str(ae)] = CommandSurface(cmd,
                                                   cnt)
         return serial_act_to_surface_map
-                                      
+                      
+    
         
+    def assign_actions_to_ops(self, pg: ProcessGraph) -> ProcessGraph:
+        """
+        For each operation node, replace incoming "assign" edges with the action name.
+        """
+        op_nodes = [n for n in pg.G.nodes() if n.var.type == 'tlq_op']
+        for op in op_nodes:
+            if self.surface_gen_options.preset_ops:
+                op_type = self.surface_gen_options.op_type_map[op.var.name]
+            else:
+                op_type = pg.get_op_type(op)
+            action_with_id = '{} ({})'.format(templatize_text(op_type), 
+                              templatize_text(op.var.name))
+            pg.rename_edges(op, 'op_ia_assign', action_with_id)
+            
+        dsc_nodes = [n for n in pg.G.nodes() if \
+                     KnowledgeBase.default().types.is_descendant_of(n.var.type, 'dsc')]
+        for node in dsc_nodes:
+            pg.rename_edges(node, 'dlink', 'describe', incoming=False)
+        
+            
+    
     def build_quest_to_surface_map(self, quest: Quest) -> Mapping:
         """
         Build map of all actions comprising this quest and their corresponding
         surface mention (CommandSurface).
         """
         pg = ProcessGraph()
-        pg.from_tw_quest(quest)
+        pg.from_tw_actions(quest.actions)
+        self.assign_actions_to_ops(pg)
         action_to_surface_map = {}
+        
         for ae in pg.topological_sort_actions():
             if ae.action in SKIP_ACTIONS_BY_MODE[self.difficulty_mode]:
                 action_to_surface_map[str(ae)] = CommandSurface(IGNORE_CMD, 0)
@@ -306,7 +352,18 @@ class SurfaceGenerator:
                     arg_name = (ae.target.var.name if ae.action \
                                 in REVERSE_ACTS else ae.source.var.name)
                     arg_name = templatize_text(arg_name)
-                cmd = '%s %s' % (ae.action, arg_name)
+                    
+                if ae.action in propositionals:
+                    arg_1 = arg_name
+                    arg_2 = (ae.source.var.name if ae.action \
+                                in REVERSE_ACTS else ae.target.var.name)
+                    arg_2 = templatize_text(arg_2)
+                    arg_str = propositionals[ae.action].format(**{'arg_1': arg_1,
+                                            'arg_2': arg_2})
+                else:
+                    arg_str = arg_name
+                    
+                cmd = '%s %s' % (ae.action, arg_str)
                 
                 cnt = get_cmd_count(cmd, list(action_to_surface_map.values()))
                 action_to_surface_map[str(ae)] = CommandSurface(cmd, cnt)
@@ -323,6 +380,20 @@ class SurfaceGenerator:
         cmd_sur_list = [str(cs) for cs in action_to_surface_map.values()]
         cmds_num_use_left = {str(cs): cmd_sur_list.count(str(cs)) for cs in cmd_sur_list}
         return action_to_surface_map, cmds_num_use_left
+     
+    def replace_mixtures_by_ref(self, pg: ProcessGraph) -> ProcessGraph:
+        """ Implicit references for operation results- substitutions such as 'grind MX' with 'grind the result of OP' """
+        if self.surface_gen_options.implicit_refs:
+            mix_nodes = [n for n in pg.G.nodes() if n.var.type == 'mx']
+            for mix in mix_nodes:
+                source_op = pg.get_source_op(mix)
+                if source_op:
+                    tg_string =  "~~RESULT~~ ~~{}~~".format(source_op.var.name)
+                    tg = TokenGenerator(symbol=mix.var.name,
+                                                     tgstring=tg_string,
+                                                     seed=self.ttg.seed,
+                                                     token_generator_map=self.ttg.token_generators_dict)
+                    self.ttg.register_token_generator(tg, override=True)             
         
         
     def entity_to_name(self, entity_type: str, internal_name: str = None) -> str:
@@ -346,8 +417,10 @@ class SurfaceGenerator:
         """
         ttg_string = ""
         pg = ProcessGraph()
-        pg.from_tw_quest(quest)
-        action_to_surface_map, cmds_num_use_left =  self.build_quest_to_surface_map(quest)
+        pg.from_tw_actions(quest.actions)
+        self.assign_actions_to_ops(pg)
+        self.replace_mixtures_by_ref(pg)
+        action_to_surface_map, cmds_num_use_left = self.build_quest_to_surface_map(quest)
         actions = pg.topological_sort_actions()
         actual_cmds = []
         if self.difficulty_mode == "debug":
