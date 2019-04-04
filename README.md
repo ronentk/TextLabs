@@ -114,7 +114,7 @@ env.close()
 print("avg. steps: {:5.1f}; avg. score: {:4.1f} / 1.".format(sum(avg_moves)/N, sum(avg_scores)/N))
 ```
 ## Training Agents in TextLabs
-The baseline LSTM-DQN reinforcement learning agent described in the paper, as well as sample code for training models on TextLabs environments, can be found at [TextLabs-Agent-Gym](https://github.com/ronentk/TextLabs-Agent-Gym).
+The baseline LSTM-DQN reinforcement learning agent described in the paper, as well as sample code for training models on TextLabs games, can be found at [TextLabs-Agent-Gym](https://github.com/ronentk/TextLabs-Agent-Gym).
 
 ## Citing TextLabs
 If you use TextLabs, please cite the following BibTex:
