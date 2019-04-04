@@ -10,7 +10,7 @@ from tw_textlabs.generator.data import KnowledgeBase
 
 lab_game_options = LabGameOptions()
 lab_game_options.seeds = 1234
-quest_gen_options = lab_game_options.sketch_gen_options
+quest_gen_options = lab_game_options.quest_gen_options
 surface_gen_options = lab_game_options.surface_gen_options
 
 sg = SurfaceGenerator(seed=lab_game_options.seeds['surface'],

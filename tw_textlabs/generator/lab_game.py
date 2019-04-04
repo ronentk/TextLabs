@@ -54,7 +54,7 @@ class LabGameOptions(GameOptions):
             True to preset all operation types, false to allow them to be dynamically defined.
         surface_gen_options:
             Options controlling generation of surface text.
-        sketch_gen_options:
+        quest_gen_options:
             Options controlling quest generation.
     """
 
@@ -62,20 +62,20 @@ class LabGameOptions(GameOptions):
                  max_quest_length: Optional[int] = None,
                  preset_ops: Optional[bool] = False,
                 surface_gen_options: Optional[Union[Mapping, SurfaceGenerationOptions]] = None,
-                sketch_gen_options: Optional[QuestGenerationOptions] = None
+                quest_gen_options: Optional[QuestGenerationOptions] = None
                 ):
         super(LabGameOptions, self).__init__()
         self.chaining = ChainingOptions() # use defaults
         self.surface_gen_options = SurfaceGenerationOptions() \
         if not surface_gen_options else surface_gen_options
-        if not sketch_gen_options:
-            self.sketch_gen_options = QuestGenerationOptions()
+        if not quest_gen_options:
+            self.quest_gen_options = QuestGenerationOptions()
             self._default_sketch_opts = True
         else:
-            self.sketch_gen_options = sketch_gen_options
+            self.quest_gen_options = quest_gen_options
             self._default_sketch_opts = False
         if max_quest_length:
-            self.sketch_gen_options.max_depth = max_quest_length
+            self.quest_gen_options.max_depth = max_quest_length
         if seed:
             self._seeds = seed
         self._lab_config = None
@@ -89,36 +89,36 @@ class LabGameOptions(GameOptions):
     
     @property
     def preset_ops(self) -> bool:
-        return self.sketch_gen_options.preset_ops
+        return self.quest_gen_options.preset_ops
 
     @preset_ops.setter
     def preset_ops(self, value: bool) -> None:
-        self.sketch_gen_options.preset_ops = value
+        self.quest_gen_options.preset_ops = value
         self.surface_gen_options.preset_ops = value
 
     @property
     def quest_reward(self) -> int:
-        return self.sketch_gen_options.quest_reward
+        return self.quest_gen_options.quest_reward
 
     @quest_reward.setter
     def quest_reward(self, value: int) -> None:
-        self.sketch_gen_options.quest_reward = value
+        self.quest_gen_options.quest_reward = value
         
     @property
     def max_quest_length(self) -> int:
-        return self.sketch_gen_options.max_depth
+        return self.quest_gen_options.max_depth
 
     @max_quest_length.setter
     def max_quest_length(self, value: int) -> None:
-        self.sketch_gen_options.max_depth = value
+        self.quest_gen_options.max_depth = value
         
     @property
     def max_search_steps(self) -> int:
-        return self.sketch_gen_options.max_steps
+        return self.quest_gen_options.max_steps
 
     @max_search_steps.setter
     def max_search_steps(self, value: int) -> None:
-        self.sketch_gen_options.max_steps = value
+        self.quest_gen_options.max_steps = value
     
     
     @property
@@ -147,7 +147,7 @@ class LabGameOptions(GameOptions):
             else:
                 self._seeds[key] = rng.randint(65635)
 
-        self.sketch_gen_options.quest_rng = self.rngs['quest']
+        self.quest_gen_options.quest_rng = self.rngs['quest']
         self.surface_gen_options.seed = self._seeds['surface'] 
 
     @property
@@ -165,8 +165,8 @@ class LabGameOptions(GameOptions):
     def uuid(self) -> str:
         # TODO: incomplete, finish this
         uuid = "tw-game-{specs}-{surface}-{seeds}"
-        uuid = uuid.format(specs=encode_seeds((self.sketch_gen_options.max_depth,
-                                               self.sketch_gen_options.max_steps)),
+        uuid = uuid.format(specs=encode_seeds((self.quest_gen_options.max_depth,
+                                               self.quest_gen_options.max_steps)),
                            surface=self.surface_gen_options.uuid,
                            seeds=encode_seeds([self.seeds[k] for k in sorted(self._seeds)]))
         return uuid

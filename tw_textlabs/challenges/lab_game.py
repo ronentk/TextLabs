@@ -61,9 +61,9 @@ def make_game_from_level(level: int, lab_game_options: Optional[LabGameOptions] 
         nb_ops_scale = np.round(np.linspace(5, 8, 10))
         lab_game_options.preset_ops = True
         lab_game_options.max_quest_length = int(max_quest_lengths[level - 21])
-        lab_game_options.sketch_gen_options.nb_materials = int(nb_materials_scale[level - 21])
-        lab_game_options.sketch_gen_options.nb_ops = int(nb_ops_scale[level - 21])
-        lab_game_options.sketch_gen_options.max_descs_per_ent = init_usage_map(3)
+        lab_game_options.quest_gen_options.nb_materials = int(nb_materials_scale[level - 21])
+        lab_game_options.quest_gen_options.nb_ops = int(nb_ops_scale[level - 21])
+        lab_game_options.quest_gen_options.max_descs_per_ent = init_usage_map(3)
     elif level >= 11:
         mode = "medium"
         max_quest_lengths = np.round(np.linspace(50, 70, 10))
@@ -71,9 +71,9 @@ def make_game_from_level(level: int, lab_game_options: Optional[LabGameOptions] 
         nb_ops_scale = np.round(np.linspace(3, 5, 10))
         lab_game_options.preset_ops = True
         lab_game_options.max_quest_length = int(max_quest_lengths[level - 11])
-        lab_game_options.sketch_gen_options.nb_materials = int(nb_materials_scale[level - 11])
-        lab_game_options.sketch_gen_options.nb_ops = int(nb_ops_scale[level - 11])
-        lab_game_options.sketch_gen_options.max_descs_per_ent = init_usage_map(2)
+        lab_game_options.quest_gen_options.nb_materials = int(nb_materials_scale[level - 11])
+        lab_game_options.quest_gen_options.nb_ops = int(nb_ops_scale[level - 11])
+        lab_game_options.quest_gen_options.max_descs_per_ent = init_usage_map(2)
     elif level >= 1:
         mode = "easy"
         max_quest_lengths = np.round(np.linspace(20, 30, 10))
@@ -81,13 +81,13 @@ def make_game_from_level(level: int, lab_game_options: Optional[LabGameOptions] 
         nb_ops_scale = np.round(np.linspace(1, 2, 10))
         lab_game_options.preset_ops = True
         lab_game_options.max_quest_length = int(max_quest_lengths[level - 1])
-        lab_game_options.sketch_gen_options.nb_materials = int(nb_materials_scale[level - 1])
-        lab_game_options.sketch_gen_options.nb_ops = int(nb_ops_scale[level - 1])
-        lab_game_options.sketch_gen_options.max_descs_per_ent = init_usage_map(1)
+        lab_game_options.quest_gen_options.nb_materials = int(nb_materials_scale[level - 1])
+        lab_game_options.quest_gen_options.nb_ops = int(nb_ops_scale[level - 1])
+        lab_game_options.quest_gen_options.max_descs_per_ent = init_usage_map(1)
         
     # no descriptors at all for level 1
     if level == 1:
-        lab_game_options.sketch_gen_options.max_descs_per_ent = init_usage_map(0)
+        lab_game_options.quest_gen_options.max_descs_per_ent = init_usage_map(0)
     
     modes = ["easy", "medium", "hard"]
     mode_idx = modes.index(mode)
@@ -129,7 +129,7 @@ def make_game(mode: str, lab_game_options: LabGameOptions
         Generated game.
     """
     
-    quest_gen_options = lab_game_options.sketch_gen_options
+    quest_gen_options = lab_game_options.quest_gen_options
     max_quest_length = quest_gen_options.max_depth
     surface_gen_options = lab_game_options.surface_gen_options
     quest_gen_options.win_condition = WinConditionType.ALL
@@ -142,8 +142,8 @@ def make_game(mode: str, lab_game_options: LabGameOptions
     rng_objects = lab_game_options.rngs['objects']
     rng_quest = lab_game_options.rngs['quest']
     
-    n_materials = lab_game_options.sketch_gen_options.nb_materials
-    n_ops = lab_game_options.sketch_gen_options.nb_ops
+    n_materials = lab_game_options.quest_gen_options.nb_materials
+    n_ops = lab_game_options.quest_gen_options.nb_ops
     
     
     all_op_types = KnowledgeBase.default().types.descendants('toe')

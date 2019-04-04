@@ -218,9 +218,9 @@ def make_lab_game(options: LabGameOptions) -> Game:
     Generated game.
     """
 
-    max_quest_length = options.sketch_gen_options.max_depth
+    max_quest_length = options.quest_gen_options.max_depth
     surface_gen_options = options.surface_gen_options
-    max_search_steps = options.sketch_gen_options.max_steps
+    max_search_steps = options.quest_gen_options.max_steps
 
     seeds = options.seeds
     metadata = {}  # Collect infos for reproducibility.
