@@ -77,7 +77,7 @@ class SurfaceGenerationOptions:
         these are explicitly set. Possible options: ["easy", "medium", "hard"]
         
     """
-    __slots__ = ['op_type_map','difficulty_mode', 'merge_parallel_actions', 'merge_serial_actions', 'implicit_refs', 'preset_ops']
+    __slots__ = ['op_type_map','difficulty_mode', 'merge_parallel_actions', 'merge_serial_actions', 'implicit_refs', 'preset_ops', 'seed']
 
     def __init__(self, options=None, **kwargs):
         if isinstance(options, SurfaceGenerationOptions):
@@ -85,6 +85,7 @@ class SurfaceGenerationOptions:
 
         options = options or kwargs
 
+        self.seed = options.get("seed", randint(65535))
         self.difficulty_mode = options.get("difficulty_mode", "easy")
         self.merge_parallel_actions = options.get("merge_parallel_actions", True)
         self.merge_serial_actions = options.get("merge_serial_actions", (self.difficulty_mode != "easy"))
@@ -187,8 +188,8 @@ class SurfaceGenerator:
         text generation. 
         surface_gen_options: options controlling Surface text generation parameters  (SurfaceGenerationOptions).
     """
-    def __init__(self, seed: int = None, surface_gen_options: Union[SurfaceGenerationOptions, Mapping] = {} ):
-        self.seed = seed if seed else randint(65635)
+    def __init__(self, surface_gen_options: Union[SurfaceGenerationOptions, Mapping] = {} ):
+        self.seed = surface_gen_options.seed
         self.rng = RandomState(self.seed)
         self.surface_gen_options = SurfaceGenerationOptions(surface_gen_options)
         self.difficulty_mode = self.surface_gen_options.difficulty_mode

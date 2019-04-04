@@ -147,6 +147,9 @@ class LabGameOptions(GameOptions):
             else:
                 self._seeds[key] = rng.randint(65635)
 
+        self.sketch_gen_options.quest_rng = self.rngs['quest']
+        self.surface_gen_options.seed = self._seeds['surface'] 
+
     @property
     def rngs(self) -> Dict[str, RandomState]:
         rngs = {}

@@ -152,8 +152,7 @@ def make_game(mode: str, lab_game_options: LabGameOptions
     if lab_game_options.preset_ops:
         surface_gen_options.op_type_map = {'tlq_op_{}'.format(i): chosen_op_types[i] for i in range(n_ops)}
     
-    sg = SurfaceGenerator(seed=seeds['surface'],
-                                         surface_gen_options=surface_gen_options)
+    sg = SurfaceGenerator(surface_gen_options=surface_gen_options)
     quest_gen_options.quest_rng = rng_quest
     
     modes = ["easy", "medium", "hard"]
@@ -168,8 +167,6 @@ def make_game(mode: str, lab_game_options: LabGameOptions
     metadata["max_quest_length"] = max_quest_length
     metadata["surface_gen_options"] = surface_gen_options.serialize()
 
-    
-    # Currently unused
     if mode == "easy":
         material_states = ["powder"]
     elif mode == "medium":
