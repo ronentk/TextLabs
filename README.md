@@ -1,5 +1,6 @@
 
 
+
 # TextLabs
 Adaptation of the [TextWorld](https://github.com/Microsoft/TextWorld) text-based reinforcement learning (RL) environment for [materials synthesis procedures analysis](https://www.synthesisproject.org/). This is intended to become a proof-of-concept for "Text-To-Quest", a new approach to procedural text understanding, by which free natural language instructions or narratives are interpreted as a game, whose solution by a text-based agent is equivalent to the successful extraction of the procedure in the required structured form.
 
@@ -25,15 +26,15 @@ Note that the implementations are still preliminary and are under active develop
 
 We call our extension package `tw_textlabs` to avoid confusion with the original `textworld` package.
 
-Following are the Textworld installation and usage instructions, which we follow with minor modifications.
+We follow the Textworld installation and usage instructions, with minor modifications.
 
 ## Installation
 
-TextWorld requires __Python 3__ and only supports __Linux__ and __macOS__ systems at the moment. We have only tested TextLabs in __Linux__ environments.
+TextLabs requires __Python 3__ and only supports __Linux__ and __macOS__ systems at the moment. We have only tested TextLabs in __Linux__ environments.
 
 ### Requirements
 
-TextWorld requires some system libraries for its native components.
+TextLabs requires some system libraries for its native components.
 On a Debian/Ubuntu-based system, these can be installed with
 
     sudo apt install build-essential uuid-dev libffi-dev python3-dev curl git
@@ -42,9 +43,7 @@ And on macOS, with
 
     brew install libffi curl git
 
-### Installing TextWorld
-
-The easiest way to install TextWorld is via [`pip`](https://pypi.org/).
+### Installing TextLabs
 
 After cloning the repo, go inside the root folder of the project (i.e. alongside `setup.py`) and run
 
@@ -71,7 +70,7 @@ In both modes, `--max_search_steps` sets the number of steps for the search for 
 
 ### Generating a game (notebook)
 
-Alternatively, games can be hand-crafted in a Jupyter Notebook environment. For details, see [example](notebooks/Demo-play-lab-game.ipynb).
+Alternatively, games can be hand-crafted in a Jupyter Notebook environment. For details, see [example](notebooks/build-lab-game-demo.ipynb).
 
 ### Playing a game (terminal)
 
@@ -114,6 +113,8 @@ for no_episode in range(N):
 env.close()
 print("avg. steps: {:5.1f}; avg. score: {:4.1f} / 1.".format(sum(avg_moves)/N, sum(avg_scores)/N))
 ```
+## Training Agents in TextLabs
+The baseline LSTM-DQN reinforcement learning agent described in the paper, as well as sample code for training models on TextLabs environments, can be found at [TextLabs-Agent-Gym](https://github.com/ronentk/TextLabs-Agent-Gym).
 
 ## Citing TextLabs
 If you use TextLabs, please cite the following BibTex:
