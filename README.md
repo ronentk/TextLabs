@@ -119,7 +119,14 @@ The code for training the baseline LSTM-DQN reinforcement learning agent describ
 ## Citing TextLabs
 If you use TextLabs, please cite the following BibTex:
 ```
-XXX
+@article{Tamari2019PlayingBT,
+  title={Playing by the Book: An Interactive Game Approach for Action Graph Extraction from Text},
+  author={Ronen Tamari and Hiroyuki Shindo and Dafna Shahaf and Yuji Matsumoto},
+  journal={CoRR},
+  year={2019},
+  volume={abs/1811.04319},
+  eprint={1811.04319},
+}
 ```
 
 ## Contributing
