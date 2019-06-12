@@ -119,13 +119,20 @@ The code for training the baseline LSTM-DQN reinforcement learning agent describ
 ## Citing TextLabs
 If you use TextLabs, please cite the following BibTex:
 ```
-@article{Tamari2019PlayingBT,
-  title={Playing by the Book: An Interactive Game Approach for Action Graph Extraction from Text},
-  author={Ronen Tamari and Hiroyuki Shindo and Dafna Shahaf and Yuji Matsumoto},
-  journal={CoRR},
-  year={2019},
-  volume={abs/1811.04319},
-  eprint={1811.04319},
+@inproceedings{tamari-etal-2019-playing,
+    title = "Playing by the Book: An Interactive Game Approach for Action Graph Extraction from Text",
+    author = "Tamari, Ronen  and
+      Shindo, Hiroyuki  and
+      Shahaf, Dafna  and
+      Matsumoto, Yuji",
+    booktitle = "Proceedings of the Workshop on Extracting Structured Knowledge from Scientific Publications",
+    month = jun,
+    year = "2019",
+    address = "Minneapolis, Minnesota",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/W19-2609",
+    pages = "62--71",
+    abstract = "Understanding procedural text requires tracking entities, actions and effects as the narrative unfolds. We focus on the challenging real-world problem of action-graph extraction from materials science papers, where language is highly specialized and data annotation is expensive and scarce. We propose a novel approach, Text2Quest, where procedural text is interpreted as instructions for an interactive game. A learning agent completes the game by executing the procedure correctly in a text-based simulated lab environment. The framework can complement existing approaches and enables richer forms of learning compared to static texts. We discuss potential limitations and advantages of the approach, and release a prototype proof-of-concept, hoping to encourage research in this direction.",
 }
 ```
 
